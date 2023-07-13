@@ -1,24 +1,31 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
+import AppProvider from "./context/AppContext";
+import { ToastContainer } from "react-toastify";
+import Landing from "./pages/Landing";
+import Mission from "./pages/Mission";
+import Opportunities from "./pages/Opportunities";
+import SignIn from "./pages/SignIn";
+import CreateAccount from "./pages/CreateAccount";
+import Confirmation from "./pages/Confirmation";
+import OpportunityPage from "./pages/OpportunityPage";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AppProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/mission" element={<Mission />} />
+          <Route path="/opportunities" element={<Opportunities />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/getstarted" element={<CreateAccount />} />
+          <Route path="/confirmation" element={<Confirmation />} />
+          <Route path="/opportunities/:id" element={<OpportunityPage />} />
+        </Routes>
+        <ToastContainer />
+      </Router>
+    </AppProvider>
   );
 }
 

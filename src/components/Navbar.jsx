@@ -1,0 +1,44 @@
+import React, { useContext } from "react";
+import { AppContext } from "../context/AppContext";
+import { Link } from "react-router-dom";
+import logo from "../images/logo.svg";
+import menuDots from "../images/menu-dots.svg";
+
+const Navbar = () => {
+  let { MobileNavOpen, setMobileNavOpen } = useContext(AppContext);
+
+  return (
+    <div className="flex">
+      <Link to="/" className="flex gap-2 w-36 md:w-52 p-4">
+        <img src={logo} alt="" className="cursor-pointer my-auto w-14" />
+        <h1 className="text-3xl font-bold text-[#027b35] tracking-wider my-auto">
+          PLATEPALS
+        </h1>
+      </Link>
+
+      <div className="my-auto ml-auto hidden md:inline">
+        <ul className="flex gap-6 mr-6 text-2xl font-bold ">
+          <li className="my-auto hover:rotate-6 hover:text-3xl duration-200">
+            <Link to="/mission">our mission</Link>
+          </li>
+          <li className="my-auto hover:-rotate-6 hover:text-3xl duration-200">
+            <Link to="/opportunities">opportunities</Link>
+          </li>
+          <Link to="/signin">
+            <li className="my-auto cursor-pointer btn bg-primary text-white glow-on-hover shadow-lg py-2 mt-1 px-6 font-semibold rounded-md transition duration-300">
+              sign in
+            </li>
+          </Link>
+        </ul>
+      </div>
+      <img
+        onClick={() => setMobileNavOpen(!MobileNavOpen)}
+        src={menuDots}
+        alt=""
+        className="my-auto ml-auto mr-4 float-right cursor-pointer md:hidden"
+      />
+    </div>
+  );
+};
+
+export default Navbar;
