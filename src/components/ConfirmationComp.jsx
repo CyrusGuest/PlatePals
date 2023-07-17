@@ -1,16 +1,21 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import ExploreGraphic from "../images/exploregraphic.png";
 import Loading from "./Loading";
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AppContext } from "../context/AppContext";
+import { Auth } from "aws-amplify";
 
 const ConfirmationComp = () => {
   const [loading, setLoading] = useState(false);
   const [code, setCode] = useState("");
   const { User, setUser } = useContext(AppContext);
   let navigate = useNavigate("/opportunities");
+
+  useEffect(() => {
+    if (User.email) navigate("/opportunities");
+  }, [User.email, navigate]);
 
   const handleSubmission = async (e) => {
     e.preventDefault();
@@ -55,6 +60,24 @@ const ConfirmationComp = () => {
       });
 
       setUser(result.data.user);
+      Auth.currentSession()
+        .then((session) => {
+          // Store the session in local storage or session storage
+          localStorage.setItem("userSession", JSON.stringify(session));
+        })
+        .catch((error) => {
+          console.error("Error storing user session:", error);
+          toast.error("Error storing user session", {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          });
+        });
       navigate("/opportunities");
     } catch (err) {
       setLoading(false);
@@ -98,7 +121,9 @@ const ConfirmationComp = () => {
         </p>
 
         {loading ? (
-          <Loading />
+          <div className="ml-32 mt-10">
+            <Loading />
+          </div>
         ) : (
           <form className="flex flex-col max-w-md mt-4 md:mx-auto gap-2 text-x">
             <div className="flex flex-col">

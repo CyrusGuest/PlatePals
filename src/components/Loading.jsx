@@ -2,10 +2,10 @@ import React from "react";
 
 const Loading = () => {
   return (
-    <div role="status" className="ml-32 mt-20">
+    <div role="status">
       <svg
         aria-hidden="true"
-        class="w-16 h-16 mr-2 text-white animate-spin fill-tertiary"
+        className="w-16 h-16 mr-2 text-white animate-spin fill-tertiary"
         viewBox="0 0 100 101"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

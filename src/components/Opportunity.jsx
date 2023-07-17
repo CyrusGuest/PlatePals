@@ -2,26 +2,25 @@ import React from "react";
 import JobAttribute from "./JobAttribute";
 import { Link } from "react-router-dom";
 
-const Opportunity = ({ position }) => {
+const Opportunity = ({ opportunity }) => {
   return (
     <Link
-      to={`/opportunities/${position.id}`}
-      className="m-4 border-2 rounded-lg border-slate-400 p-4 shadow-lg cursor-pointer"
+      to={`/opportunities/${opportunity.organizationid}/${opportunity.id}`}
+      className="m-4 border-2 rounded-lg p-4 shadow-lg cursor-pointer"
     >
-      <h1 className="font-bold ">{position.name}</h1>
-      <h3 className="text-slate-600">{position.organization}</h3>
-      <h3 className="text-slate-600">{position.location}</h3>
+      <h1 className="font-bold">{opportunity.title}</h1>
+      <h3 className="text-slate-600">{opportunity.organizationname}</h3>
+      <h3 className="text-slate-600">
+        {opportunity.city}, {opportunity.state} {opportunity.zip}
+      </h3>
 
       <div className="flex gap-3 mt-2">
-        <JobAttribute type="pay" rate={position.rate} />
-        <JobAttribute type="hours" fulltime={position.fulltime} />
+        <JobAttribute type="pay" rate={opportunity.rate} />
+        <JobAttribute type="hours" fulltime={opportunity.fulltime} />
       </div>
 
-      <ul className="list-disc ml-4 mt-3 text-sm text-gray-500">
-        <li>Bachelors degree in M.S. Computer Science</li>
-        <li>Translate three years</li>
-        <li>Minimum 40 hours a week</li>
-        <li>Must be really cute</li>
+      <ul className="list-disc mt-3 text-sm text-gray-500 max-h-32 w-11/12 overflow-hidden overflow-ellipsis">
+        <div dangerouslySetInnerHTML={{ __html: opportunity.description }} />
       </ul>
 
       <button className="btn bg-primary text-white w-full mt-2">View</button>

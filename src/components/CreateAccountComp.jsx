@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import ExploreGraphic from "../images/exploregraphic.png";
 import Loading from "./Loading";
 import { toast } from "react-toastify";
@@ -14,6 +14,10 @@ const CreateAccountComp = () => {
   const [loading, setLoading] = useState("");
   const { User, setUser } = useContext(AppContext);
   let navigate = useNavigate();
+
+  useEffect(() => {
+    if (User.email) navigate("/opportunities");
+  }, [User.email, navigate]);
 
   const handleSubmission = async (e) => {
     e.preventDefault();
@@ -74,7 +78,6 @@ const CreateAccountComp = () => {
       });
 
       setUser(result.data.user);
-      console.log(User);
       navigate("/confirmation");
     } catch (err) {
       setLoading(false);
@@ -92,7 +95,7 @@ const CreateAccountComp = () => {
   };
 
   return (
-    <div className="flex gap-8 mx-auto justify-center mt-20 mb-40 shadow-lg rounded-lg w-fit ">
+    <div className="flex gap-8 mx-auto justify-center md:mt-20 mb-40 md:shadow-lg rounded-lg w-fit ">
       <div className="bg-white hidden text-primary rounded-l-lg h-full w-full max-w-lg md:flex justify-center flex-col">
         <h1 className="font-bold text-3xl text-black mt-10 text-center">
           Welcome!
@@ -107,7 +110,7 @@ const CreateAccountComp = () => {
         />
       </div>
 
-      <div className="md:mt-4 mx-auto md:mx-0 w-96 bg-primary text-white p-6 rounded-lg md:rounded-r-lg">
+      <div className="md:mt-4 mx-auto md:mx-0 w-96 bg-white text-primary md:bg-primary md:text-white p-6 rounded-lg md:rounded-r-lg">
         <h1 className="font-bold text-3xl">Create an account</h1>
         <p>
           Already have an account? Sign in{" "}
@@ -118,7 +121,9 @@ const CreateAccountComp = () => {
         </p>
 
         {loading ? (
-          <Loading />
+          <div className="ml-32 mt-10">
+            <Loading />
+          </div>
         ) : (
           <form className="flex flex-col max-w-md mt-4 md:mx-auto gap-2 text-x">
             <div className="flex flex-col">
@@ -130,8 +135,8 @@ const CreateAccountComp = () => {
                 <button
                   className={`btn w-full mt-1 ${
                     individual
-                      ? " text-primary bg-white "
-                      : " text-white bg-primary "
+                      ? " md:text-primary md:bg-white text-white bg-primary"
+                      : " md:text-white md:bg-primary text-primary bg-white"
                   }`}
                   type="button"
                   onClick={() => setIndividual(true)}
@@ -141,8 +146,8 @@ const CreateAccountComp = () => {
                 <button
                   className={`btn w-full mt-1 ${
                     !individual
-                      ? " text-primary bg-white "
-                      : " text-white bg-primary "
+                      ? " md:text-primary md:bg-white text-white bg-primary"
+                      : " md:text-white md:bg-primary text-primary bg-white"
                   }`}
                   type="button"
                   onClick={() => setIndividual(false)}
@@ -157,7 +162,7 @@ const CreateAccountComp = () => {
                 {individual ? "Full Name" : "Organization Name"}
               </label>
               <input
-                className="outline-none btn placeholder-primary border-none shadow-lg rounded-lg p-2 mt-1 text-primary bg-white focus:bg-primary focus:text-white focus:placeholder-white transition-all duration-200"
+                className="outline-none btn placeholder:text-white md:placeholder:text-gray-500 border-none shadow-lg rounded-lg p-2 mt-1 text-white bg-primary focus:text-primary focus:bg-white focus:placeholder:text-primary md:text-primary md:bg-white md:focus:bg-primary md:focus:text-white md:focus:placeholder-white transition-all duration-200"
                 type="text"
                 placeholder={individual ? "Johnathon Doe" : "John Doe Inc."}
                 onChange={(e) => setName(e.target.value)}
@@ -170,7 +175,7 @@ const CreateAccountComp = () => {
                 Email
               </label>
               <input
-                className="outline-none btn placeholder-primary border-none shadow-lg rounded-lg p-2 mt-1 text-primary bg-white focus:bg-primary focus:text-white focus:placeholder-white transition-all duration-200"
+                className="outline-none btn placeholder:text-white md:placeholder:text-gray-500 border-none shadow-lg rounded-lg p-2 mt-1 texttext-white bg-primary  focus:text-primary focus:bg-white focus:placeholder:text-primary md:text-primary md:bg-white md:focus:bg-primary md:focus:text-white md:focus:placeholder-white transition-all duration-200"
                 type="text"
                 placeholder="johndoe@gmail.com"
                 onChange={(e) => setEmail(e.target.value)}
@@ -183,7 +188,7 @@ const CreateAccountComp = () => {
                 Password
               </label>
               <input
-                className="outline-none btn placeholder-primary border-none shadow-lg rounded-lg p-2 mt-1 text-primary bg-white focus:bg-primary focus:text-white focus:placeholder-white transition-all duration-200"
+                className="outline-none btn placeholder:text-white md:placeholder:text-gray-500 border-none shadow-lg rounded-lg p-2 mt-1 text-white bg-primary  focus:text-primary focus:bg-white focus:placeholder:text-primary md:text-primary md:bg-white md:focus:bg-primary md:focus:text-white md:focus:placeholder-white transition-all duration-200"
                 type="password"
                 placeholder="johnlovesdogs123"
                 onChange={(e) => setPassword(e.target.value)}
@@ -192,14 +197,16 @@ const CreateAccountComp = () => {
             </div>
 
             <button
-              className="btn text-primary bg-white mt-12"
+              className="btn text-xl text-white bg-primary md:text-primary md:bg-white mt-8 md:mt-12"
               type="button"
               onClick={(e) => handleSubmission(e)}
             >
               Create account
             </button>
 
-            <p className="text-sm text-center">Get started today!</p>
+            <p className="text-sm text-center mb-10 md:mb-0">
+              Get started today!
+            </p>
           </form>
         )}
       </div>
