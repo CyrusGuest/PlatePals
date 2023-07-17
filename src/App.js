@@ -12,6 +12,7 @@ import OpportunityPage from "./pages/OpportunityPage";
 import Account from "./pages/Account";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Listings from "./pages/Listings";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/getstarted" element={<CreateAccount />} />
           <Route path="/confirmation" element={<Confirmation />} />
+          <Route path="/resetpassword" element={<ResetPassword />} />
           <Route path="/listings" element={<Listings />} />
           <Route
             path="/account"

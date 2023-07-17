@@ -184,9 +184,12 @@ const SignInComp = () => {
               Sign in
             </button>
 
-            <p className="text-sm text-center md:mb-0 mb-52">
+            <Link
+              to="/forgotpassword"
+              className="text-sm text-center md:mb-0 mb-52"
+            >
               Forgot your password?
-            </p>
+            </Link>
           </form>
         )}
       </div>
