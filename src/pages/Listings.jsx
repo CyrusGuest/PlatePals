@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import MobileNav from "../components/MobileNav";
 import Navbar from "../components/Navbar";
@@ -10,18 +10,48 @@ import {
   faPlusCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Landing = () => {
-  let { MobileNavOpen } = useContext(AppContext);
+  let { MobileNavOpen, User } = useContext(AppContext);
   let navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [opportunities, setOpportunities] = useState([]);
 
-  const opportunity = {
-    title: "Food Kitchen Volunteer",
-    applicants: 324,
-    status: "Open",
-    organizationId: 0,
-    id: 0,
-  };
+  let isFetched = false;
+
+  useEffect(() => {
+    const fetchOpportunities = async () => {
+      try {
+        setLoading(true);
+
+        const res = await axios.get(
+          `http://localhost:3001/api/v1/opportunities?organizationId=0`
+        );
+        setOpportunities(res.data.items);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load opportunities from server", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      }
+
+      setLoading(false);
+    };
+
+    if (!isFetched) fetchOpportunities();
+    isFetched = true;
+  }, []);
+
+  console.log(User.id);
 
   return (
     <div>
@@ -47,7 +77,7 @@ const Landing = () => {
             <div>
               <FontAwesomeIcon
                 icon={faPlusCircle}
-                className="text-primary opacity-0 md:opacity-100 my-auto text-5xl md:text-7xl md:fixed bottom-7 right-10 cursor-pointer"
+                className="text-primary opacity-0 md:opacity-100 my-auto text-5xl md:text-7xl md:fixed bottom-7 right-10 cursor-pointer hover:rotate-[90deg] duration-300"
               />
             </div>
           </div>
@@ -57,9 +87,9 @@ const Landing = () => {
           </button>
 
           <div className="flex flex-col gap-4 mt-8">
-            <ListingCard listing={opportunity} />
-            <ListingCard listing={opportunity} />
-            <ListingCard listing={opportunity} />
+            {opportunities.map((opportunity) => (
+              <ListingCard key={opportunity.id} listing={opportunity} />
+            ))}
           </div>
         </div>
       </div>

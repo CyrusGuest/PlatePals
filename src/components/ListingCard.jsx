@@ -25,6 +25,10 @@ const ListingCard = ({ listing }) => {
         </span>
       </h1>
 
+      <p>{listing.organization}</p>
+      <p>
+        {listing.city}, {listing.state} {listing.zip}
+      </p>
       <p>{listing.applicants} applicants</p>
 
       <div className="flex gap-2 mt-4">

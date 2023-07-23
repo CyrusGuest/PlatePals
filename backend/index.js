@@ -80,7 +80,13 @@ app.get("/api/v1/opportunities/:organizationId/:id", async (req, res) => {
 
 app.get("/api/v1/opportunities", async (req, res) => {
   // Extract query parameters
-  const { searchTerm, searchLocation, limit = 9, lastEvaluatedKey } = req.query;
+  const {
+    searchTerm,
+    searchLocation,
+    limit = 9,
+    lastEvaluatedKey,
+    organizationId,
+  } = req.query;
   let latitude;
   let longitude;
 
@@ -131,6 +137,10 @@ app.get("/api/v1/opportunities", async (req, res) => {
     console.log("first");
     searchParams.query = searchTerm;
     searchParams.queryParser = undefined;
+  }
+
+  if (!organizationId === "" && organizationId !== undefined) {
+    searchParams.filterQuery = `organizationid:'${organizationId}'`;
   }
 
   if (isNaN(limit)) searchParams.size = 9;
