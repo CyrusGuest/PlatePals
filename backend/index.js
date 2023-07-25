@@ -1,8 +1,18 @@
 const express = require("express");
 const morgan = require("morgan");
+const multer = require("multer");
 const axios = require("axios");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const fs = require("fs");
+const path = require("path");
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const { DynamoDBDocumentClient, GetCommand, ScanCommand } = require("@aws-sdk/lib-dynamodb");
+const {
+  DynamoDBDocumentClient,
+  GetCommand,
+  ScanCommand,
+  PutCommand,
+} = require("@aws-sdk/lib-dynamodb");
 const cors = require("cors");
 const AmazonCognitoIdentity = require("amazon-cognito-identity-js");
 const {
@@ -14,6 +24,7 @@ const {
   SearchCommand,
 } = require("@aws-sdk/client-cloudsearch-domain");
 const app = express();
+const upload = multer({ dest: "uploads/" });
 
 app.use(morgan("dev"));
 app.use(cors());
@@ -28,6 +39,9 @@ const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
 const dynamoDb = new DynamoDBClient({ region: "us-east-1" });
 const ddbDocClient = DynamoDBDocumentClient.from(dynamoDb, {
   marshallOptions: { removeUndefinedValues: true },
+});
+const s3Client = new S3Client({
+  region: "us-east-1", // Update this with your S3 region
 });
 
 app.post("/api/v1/verify_token", async (req, res) => {
@@ -89,7 +103,7 @@ app.get("/api/v1/opportunities", async (req, res) => {
   } = req.query;
   let latitude;
   let longitude;
-  
+
   if (searchLocation !== "" && searchLocation !== undefined) {
     const apiKey = "AIzaSyAELzQedRkBkX8gYQZYjMg9dMqDmph_9MM";
 
@@ -308,17 +322,53 @@ app.post("/api/v1/confirm_user", (req, res) => {
   });
 });
 
-app.get('/api/v1/applications', async (req, res) => {
-  const { organizationId, userId, opportunityId } = req.query;
+app.post("/api/v1/apply", upload.single("resume"), async (req, res) => {
+  const application = req.body;
+  const resume = req.file; // This is how you get the uploaded file
 
-  console.log(`userId: ${userId}`);
+  const fileStream = fs.createReadStream(
+    path.join(__dirname, "/uploads/", resume.filename)
+  );
+  const uploadParams = {
+    Bucket: "plate-pals-resumes",
+    Key: `resumes/${resume.filename}`, // or any path you want to put file to in your bucket
+    Body: fileStream,
+  };
+
+  try {
+    const data = await s3Client.send(new PutObjectCommand(uploadParams));
+
+    const dbItem = {
+      TableName: "PlatePalsApplications",
+      Item: {
+        ...application, // Add other application fields here
+        id: parseInt(application.id),
+        organizationId: parseInt(application.organizationId),
+        resumeKey: `resumes/${resume.filename}`,
+      },
+    };
+
+    const dbResult = await ddbDocClient.send(new PutCommand(dbItem));
+
+    res.json({ message: "Application successfully created" });
+
+    fs.unlink(path.join(__dirname, "/uploads/", resume.filename), (err) => {
+      if (err) throw err;
+    });
+  } catch (err) {
+    console.log("Error", err);
+  }
+});
+
+app.get("/api/v1/applications", async (req, res) => {
+  const { organizationId, userId, opportunityId } = req.query;
 
   const params = {
     TableName: "PlatePalsApplications", // Replace with your DynamoDB table name)
     FilterExpression: "userId = :sub",
     ExpressionAttributeValues: {
-      ":sub": userId
-    }
+      ":sub": userId,
+    },
   };
 
   try {
@@ -329,7 +379,7 @@ app.get('/api/v1/applications', async (req, res) => {
     return res.json(applications);
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: 'Could not load applications' });
+    return res.status(500).json({ error: "Could not load applications" });
   }
 });
 

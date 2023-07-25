@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 
@@ -6,9 +6,11 @@ const ProtectedRoute = ({ children }) => {
   let navigate = useNavigate();
   let { User } = useContext(AppContext);
 
-  if (!User.email) {
-    return navigate("/");
-  }
+  useEffect(() => {
+    if (!User.email) {
+      return navigate("/");
+    }
+  }, [User]);
 
   return children;
 };

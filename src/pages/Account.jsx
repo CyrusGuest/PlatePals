@@ -10,10 +10,11 @@ import {
   faUser,
   faArrowCircleLeft,
 } from "@fortawesome/free-solid-svg-icons";
-import ApplicationComp from "../components/ApplicationComp";
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
-import { toast } from 'react-toastify';
+import axios from "axios";
+import { toast } from "react-toastify";
+import ApplicationCard from "../components/ApplicationCard";
+import Loading from "../components/Loading";
 
 const Account = () => {
   let { MobileNavOpen, User, handleLogout } = useContext(AppContext);
@@ -32,8 +33,6 @@ const Account = () => {
           `http://localhost:3001/api/v1/applications?userId=${User.sub}`
         );
         setApplications(res.data);
-
-
       } catch (err) {
         console.error(err);
         toast.error("Failed to load applications from server", {
@@ -54,18 +53,6 @@ const Account = () => {
     if (!isFetched) fetchApplications();
     isFetched = true;
   }, []);
-
-  // const testApplication = {
-  //   title: "Food Kitchen Volunteer",
-  //   organization: "Philly Food Kitchen",
-  //   city: "Philadelphia",
-  //   state: "PA",
-  //   zip: "01434",
-  //   dateSubmitted: "05/20/2023",
-  //   status: "Open",
-  //   organizationId: 0,
-  //   opportunityId: 0,
-  // };
 
   return (
     <div>
@@ -133,16 +120,28 @@ const Account = () => {
             </div>
           </div>
 
-          <div className="flex flex-col">
-            <h1 className="text-xl font-bold mb-1">Your applications</h1>
-            <div className="flex flex-col gap-4">
-            {applications.map((application) => (
-              <ApplicationComp key={application.id} application={application} />
-            ))}
+          {applications.length > 0 ? (
+            <div className="flex flex-col">
+              <h1 className="text-xl font-bold mb-1">Your applications</h1>
+              {loading ? (
+                <div>
+                  <Loading />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {applications.map((application) => (
+                    <ApplicationCard
+                      key={application.id}
+                      application={application}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
+          ) : (
+            ""
+          )}
         </div>
-
         <Footer />
       </div>
     </div>

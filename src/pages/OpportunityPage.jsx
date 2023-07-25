@@ -19,7 +19,7 @@ import Search from "../components/Search";
 import ApplicationWindow from "../components/ApplicationWindow";
 
 const OpportunityPage = () => {
-  let { MobileNavOpen } = useContext(AppContext);
+  let { MobileNavOpen, User } = useContext(AppContext);
   let { organizationId, id } = useParams();
   const [opportunity, setOpportunity] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
@@ -90,12 +90,17 @@ const OpportunityPage = () => {
   return (
     <div>
       {MobileNavOpen ? <MobileNav /> : ""}
-      { applying ? <ApplicationWindow /> : "" }
+      {applying ? (
+        <ApplicationWindow
+          opportunity={opportunity}
+          setApplying={setApplying}
+        />
+      ) : (
+        ""
+      )}
       <div className={MobileNavOpen || applying ? "opacity-50" : "opacity-100"}>
         <div className="hidden md:block">
           <Navbar />
-
-          
 
           <Search
             setLoading={setLoading}
@@ -169,7 +174,42 @@ const OpportunityPage = () => {
 
               <hr />
 
-              <button onClick={() => setApplying(true)} className="btn text-2xl bg-primary text-white shadow-lg mt-3">
+              <button
+                onClick={() => {
+                  if (!User.sub)
+                    return toast.error(
+                      "Please create an account before applying",
+                      {
+                        position: "top-right",
+                        autoClose: 5000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "light",
+                      }
+                    );
+
+                  if (User.account_type === "Organization")
+                    return toast.error(
+                      "Only account types of individual can apply to positions",
+                      {
+                        position: "top-right",
+                        autoClose: 5000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "light",
+                      }
+                    );
+
+                  setApplying(true);
+                }}
+                className="btn text-2xl bg-primary text-white shadow-lg mt-3"
+              >
                 Apply
               </button>
               <p className="text-gray-500 text-center md:mb-0 mb-10 mt-2">

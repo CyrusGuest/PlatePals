@@ -4,7 +4,7 @@ import MobileNav from "../components/MobileNav";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ListingCard from "../components/ListingCard.jsx";
-import Loading from '../components/Loading.jsx';
+import Loading from "../components/Loading.jsx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowCircleLeft,
@@ -13,12 +13,14 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import CreateListingWindow from "../components/CreateListingWindow";
 
 const Landing = () => {
   let { MobileNavOpen, User } = useContext(AppContext);
   let navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [opportunities, setOpportunities] = useState([]);
+  const [creating, setCreating] = useState(false);
 
   let isFetched = false;
 
@@ -55,8 +57,9 @@ const Landing = () => {
   return (
     <div>
       {MobileNavOpen ? <MobileNav /> : ""}
+      {creating ? <CreateListingWindow setCreating={setCreating} /> : ""}
 
-      <div className={MobileNavOpen ? "opacity-50" : "opacity-100"}>
+      <div className={MobileNavOpen || creating ? "opacity-50" : "opacity-100"}>
         <Navbar />
 
         <div className="mx-6 mb-60 md:max-w-xl md:mx-auto md:border-2 md:border-slate-400 md:shadow-lg md:rounded-lg md:py-6 md:px-8">
@@ -77,6 +80,7 @@ const Landing = () => {
               <FontAwesomeIcon
                 icon={faPlusCircle}
                 className="text-primary opacity-0 md:opacity-100 my-auto text-5xl md:text-7xl md:fixed bottom-7 right-10 cursor-pointer hover:rotate-[90deg] duration-300"
+                onClick={() => setCreating(true)}
               />
             </div>
           </div>
@@ -85,7 +89,13 @@ const Landing = () => {
             Create Listing
           </button>
 
-          { loading ? <div className="flex justify-center my-10"><Loading/></div> : "" }
+          {loading ? (
+            <div className="flex justify-center my-10">
+              <Loading />
+            </div>
+          ) : (
+            ""
+          )}
 
           <div className="flex flex-col gap-4 mt-8">
             {opportunities.map((opportunity) => (
