@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { AppContext } from "../context/AppContext";
 import MobileNav from "../components/MobileNav";
 import Navbar from "../components/Navbar";
@@ -12,22 +12,60 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import ApplicationComp from "../components/ApplicationComp";
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const Account = () => {
   let { MobileNavOpen, User, handleLogout } = useContext(AppContext);
   let navigate = useNavigate();
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const testApplication = {
-    title: "Food Kitchen Volunteer",
-    organization: "Philly Food Kitchen",
-    city: "Philadelphia",
-    state: "PA",
-    zip: "01434",
-    dateSubmitted: "05/20/2023",
-    status: "Open",
-    organizationId: 0,
-    opportunityId: 0,
-  };
+  let isFetched = false;
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        setLoading(true);
+
+        const res = await axios.get(
+          `http://localhost:3001/api/v1/applications?userId=${User.sub}`
+        );
+        setApplications(res.data);
+
+
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load applications from server", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      }
+
+      setLoading(false);
+    };
+
+    if (!isFetched) fetchApplications();
+    isFetched = true;
+  }, []);
+
+  // const testApplication = {
+  //   title: "Food Kitchen Volunteer",
+  //   organization: "Philly Food Kitchen",
+  //   city: "Philadelphia",
+  //   state: "PA",
+  //   zip: "01434",
+  //   dateSubmitted: "05/20/2023",
+  //   status: "Open",
+  //   organizationId: 0,
+  //   opportunityId: 0,
+  // };
 
   return (
     <div>
@@ -36,7 +74,7 @@ const Account = () => {
       <div className={MobileNavOpen ? "opacity-50" : "opacity-100"}>
         <Navbar />
 
-        <div className="px-6 flex flex-col gap-6 md:max-w-xl md:mx-auto md:border-2 md:border-slate-400 md:shadow-lg md:rounded-lg md:py-6">
+        <div className="px-6 mb-52 flex flex-col gap-6 md:max-w-xl md:mx-auto md:border-2 md:border-slate-400 md:shadow-lg md:rounded-lg md:py-6">
           <div className="flex mt-4 gap-4">
             <div onClick={() => navigate(-1)}>
               <FontAwesomeIcon
@@ -98,9 +136,9 @@ const Account = () => {
           <div className="flex flex-col">
             <h1 className="text-xl font-bold mb-1">Your applications</h1>
             <div className="flex flex-col gap-4">
-              <ApplicationComp application={testApplication} />
-              <ApplicationComp application={testApplication} />
-              <ApplicationComp application={testApplication} />
+            {applications.map((application) => (
+              <ApplicationComp key={application.id} application={application} />
+            ))}
             </div>
           </div>
         </div>

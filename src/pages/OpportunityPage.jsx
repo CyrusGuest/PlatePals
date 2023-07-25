@@ -16,6 +16,7 @@ import {
 import { Link } from "react-router-dom";
 import Opportunity from "../components/Opportunity";
 import Search from "../components/Search";
+import ApplicationWindow from "../components/ApplicationWindow";
 
 const OpportunityPage = () => {
   let { MobileNavOpen } = useContext(AppContext);
@@ -23,6 +24,7 @@ const OpportunityPage = () => {
   const [opportunity, setOpportunity] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [applying, setApplying] = useState(false);
 
   let isFetched = false;
 
@@ -88,9 +90,12 @@ const OpportunityPage = () => {
   return (
     <div>
       {MobileNavOpen ? <MobileNav /> : ""}
-      <div className={MobileNavOpen ? "opacity-50" : "opacity-100"}>
+      { applying ? <ApplicationWindow /> : "" }
+      <div className={MobileNavOpen || applying ? "opacity-50" : "opacity-100"}>
         <div className="hidden md:block">
           <Navbar />
+
+          
 
           <Search
             setLoading={setLoading}
@@ -164,7 +169,7 @@ const OpportunityPage = () => {
 
               <hr />
 
-              <button className="btn text-2xl bg-primary text-white shadow-lg mt-3">
+              <button onClick={() => setApplying(true)} className="btn text-2xl bg-primary text-white shadow-lg mt-3">
                 Apply
               </button>
               <p className="text-gray-500 text-center md:mb-0 mb-10 mt-2">

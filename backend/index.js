@@ -2,7 +2,7 @@ const express = require("express");
 const morgan = require("morgan");
 const axios = require("axios");
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const { DynamoDBDocumentClient, GetCommand } = require("@aws-sdk/lib-dynamodb");
+const { DynamoDBDocumentClient, GetCommand, ScanCommand } = require("@aws-sdk/lib-dynamodb");
 const cors = require("cors");
 const AmazonCognitoIdentity = require("amazon-cognito-identity-js");
 const {
@@ -89,8 +89,8 @@ app.get("/api/v1/opportunities", async (req, res) => {
   } = req.query;
   let latitude;
   let longitude;
-
-  if (searchLocation !== "") {
+  
+  if (searchLocation !== "" && searchLocation !== undefined) {
     const apiKey = "AIzaSyAELzQedRkBkX8gYQZYjMg9dMqDmph_9MM";
 
     await axios
@@ -106,8 +106,6 @@ app.get("/api/v1/opportunities", async (req, res) => {
           const coordinates = results[0].geometry.location;
           latitude = coordinates.lat;
           longitude = coordinates.lng;
-          console.log("Latitude:", latitude);
-          console.log("Longitude:", longitude);
         } else {
           console.log("Location not found");
         }
@@ -134,13 +132,12 @@ app.get("/api/v1/opportunities", async (req, res) => {
 
   // Conditionally add the query parameter if searchTerm is not empty
   if (searchTerm !== "" && searchTerm !== undefined) {
-    console.log("first");
     searchParams.query = searchTerm;
     searchParams.queryParser = undefined;
   }
 
-  if (!organizationId === "" && organizationId !== undefined) {
-    searchParams.filterQuery = `organizationid:'${organizationId}'`;
+  if (organizationId !== "" && organizationId !== undefined) {
+    searchParams.filterQuery = `organizationid: ${parseInt(organizationId)}`;
   }
 
   if (isNaN(limit)) searchParams.size = 9;
@@ -309,6 +306,31 @@ app.post("/api/v1/confirm_user", (req, res) => {
     // if successful, the result will be 'SUCCESS'
     res.send({ statusCode: 200, user: cognitoUser, result });
   });
+});
+
+app.get('/api/v1/applications', async (req, res) => {
+  const { organizationId, userId, opportunityId } = req.query;
+
+  console.log(`userId: ${userId}`);
+
+  const params = {
+    TableName: "PlatePalsApplications", // Replace with your DynamoDB table name)
+    FilterExpression: "userId = :sub",
+    ExpressionAttributeValues: {
+      ":sub": userId
+    }
+  };
+
+  try {
+    const command = new ScanCommand(params);
+    const data = await dynamoDb.send(command);
+
+    const applications = data.Items;
+    return res.json(applications);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Could not load applications' });
+  }
 });
 
 app.listen(3001, () => console.log("server listening on port 3001"));

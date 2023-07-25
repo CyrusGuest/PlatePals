@@ -4,6 +4,7 @@ import MobileNav from "../components/MobileNav";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ListingCard from "../components/ListingCard.jsx";
+import Loading from '../components/Loading.jsx';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowCircleLeft,
@@ -51,8 +52,6 @@ const Landing = () => {
     isFetched = true;
   }, []);
 
-  console.log(User.id);
-
   return (
     <div>
       {MobileNavOpen ? <MobileNav /> : ""}
@@ -85,6 +84,8 @@ const Landing = () => {
           <button className="btn md:hidden bg-primary text-lg text-white w-full mt-4">
             Create Listing
           </button>
+
+          { loading ? <div className="flex justify-center my-10"><Loading/></div> : "" }
 
           <div className="flex flex-col gap-4 mt-8">
             {opportunities.map((opportunity) => (

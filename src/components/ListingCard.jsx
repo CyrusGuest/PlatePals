@@ -6,7 +6,6 @@ import { AppContext } from "../context/AppContext";
 
 const ListingCard = ({ listing }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  let { User } = useContext(AppContext);
 
   return (
     <div
@@ -15,7 +14,7 @@ const ListingCard = ({ listing }) => {
       } border-2 rounded-lg border-slate-400 text-gray-500 relative px-3 py-4 shadow-lg text-sm `}
     >
       <h1 className="text-black font-bold text-lg">
-        {listing.title} -{" "}
+        {listing.title} - {" "}
         <span
           className={`${
             listing.status === "Open" ? "text-gray-500" : "text-red-600"
@@ -42,13 +41,15 @@ const ListingCard = ({ listing }) => {
           <FontAwesomeIcon icon={faPencil} className="text-2xl " />
         </div>
 
+        
+
         {dropdownOpen && (
           <div className=" absolute z-10 left-14 mt-8 p-4 w-48 bg-white rounded-md shadow-md text-base">
             {/* Dropdown Content */}
             <ul className="flex flex-col gap-2">
               <MenuOption
                 title="Your Listing"
-                to={`/opportunities/${listing.organizationId}/${listing.id}`}
+                to={`/opportunities/${listing.organizationid}/${listing.id}`}
               />
 
               <MenuOption title="Applicants" />

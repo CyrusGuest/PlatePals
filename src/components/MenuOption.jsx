@@ -8,7 +8,7 @@ const MenuOption = ({ title, onClick, to }) => {
 
   return (
     <Link
-      className={`hover:bg-gray-200 cursor-pointer rounded-lg p-2 flex ${
+      className={`hover:bg-gray-200 cursor-pointer font-bold text-black rounded-lg p-2 flex ${
         isHovered ? "bg-gray-200" : ""
       }`}
       onMouseEnter={() => setIsHovered(true)}
