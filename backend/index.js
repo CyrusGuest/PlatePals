@@ -151,7 +151,7 @@ app.get("/api/v1/opportunities", async (req, res) => {
   }
 
   if (organizationId !== "" && organizationId !== undefined) {
-    searchParams.filterQuery = `organizationid: ${parseInt(organizationId)}`;
+    searchParams.filterQuery = `organizationid: ${organizationId}`;
   }
 
   if (isNaN(limit)) searchParams.size = 9;
@@ -164,7 +164,7 @@ app.get("/api/v1/opportunities", async (req, res) => {
     searchParams.expr = JSON.stringify(exprObj);
     searchParams.sort = "distance asc";
     searchParams.return =
-      "distance,city,coordinates,applicants,description,id,organizationid,organizationname,rate,state,title";
+      "distance,coordinates,applicants,description,id,organizationid,organizationname,rate,title,location";
   }
 
   try {
@@ -336,7 +336,7 @@ app.post("/api/v1/apply", upload.single("resume"), async (req, res) => {
   };
 
   try {
-    const data = await s3Client.send(new PutObjectCommand(uploadParams));
+    await s3Client.send(new PutObjectCommand(uploadParams));
 
     const dbItem = {
       TableName: "PlatePalsApplications",
@@ -348,7 +348,7 @@ app.post("/api/v1/apply", upload.single("resume"), async (req, res) => {
       },
     };
 
-    const dbResult = await ddbDocClient.send(new PutCommand(dbItem));
+    await ddbDocClient.send(new PutCommand(dbItem));
 
     res.json({ message: "Application successfully created" });
 
@@ -380,6 +380,41 @@ app.get("/api/v1/applications", async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Could not load applications" });
+  }
+});
+
+app.post("/api/v1/opportunities", async (req, res) => {
+  const opportunity = req.body;
+  const apiKey = "AIzaSyAELzQedRkBkX8gYQZYjMg9dMqDmph_9MM";
+
+  try {
+    const result = await axios.get(
+      "https://maps.googleapis.com/maps/api/geocode/json",
+      {
+        params: {
+          address: opportunity.location,
+          key: apiKey,
+        },
+      }
+    );
+
+    const dbItem = {
+      TableName: "PlatePals",
+      Item: {
+        ...opportunity, // Add other application fields here
+        id: parseInt(opportunity.id),
+        organizationId: opportunity.organizationId,
+        location: result.data.results[0].formatted_address,
+        coordinates: `${result.data.results[0].geometry.location.lat}, ${result.data.results[0].geometry.location.lng}`,
+      },
+    };
+
+    await ddbDocClient.send(new PutCommand(dbItem));
+
+    res.json({ message: "Opportunity successfully created" });
+  } catch (error) {
+    console.error(`Failed to get location: ${error}`);
+    res.json({ message: `Failed to create opportunity: ${error}` });
   }
 });
 

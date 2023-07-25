@@ -10,9 +10,7 @@ const Opportunity = ({ opportunity }) => {
     >
       <h1 className="font-bold">{opportunity.title}</h1>
       <h3 className="text-slate-600">{opportunity.organizationname}</h3>
-      <h3 className="text-slate-600">
-        {opportunity.city}, {opportunity.state} {opportunity.zip}
-      </h3>
+      <h3 className="text-slate-600">{opportunity.location}</h3>
 
       <div className="flex gap-3 mt-2">
         <JobAttribute type="pay" rate={opportunity.rate} />
