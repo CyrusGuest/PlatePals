@@ -119,7 +119,7 @@ const SignInComp = () => {
   };
 
   return (
-    <div className="flex gap-8 mx-auto justify-center md:mt-20 mb-40 md:shadow-lg rounded-lg w-fit ">
+    <div className="flex gap-8 mx-auto justify-center md:mt-20 mb-40 md:mb-72 md:shadow-lg rounded-lg w-fit ">
       <div className="bg-white hidden text-primary rounded-l-lg h-full w-full max-w-lg md:flex justify-center flex-col">
         <h1 className="font-bold text-3xl text-black mt-10 text-center">
           Welcome back!

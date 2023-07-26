@@ -24,6 +24,8 @@ const Landing = () => {
 
   let isFetched = false;
 
+  console.log(opportunities);
+
   useEffect(() => {
     const fetchOpportunities = async () => {
       try {
@@ -62,7 +64,7 @@ const Landing = () => {
       <div className={MobileNavOpen || creating ? "opacity-50" : "opacity-100"}>
         <Navbar />
 
-        <div className="mx-6 mb-60 md:max-w-xl md:mx-auto md:border-2 md:border-slate-400 md:shadow-lg md:rounded-lg md:py-6 md:px-8">
+        <div className="mx-6 mb-96 md:max-w-xl md:mx-auto md:border-2 md:border-slate-400 md:shadow-lg md:rounded-lg md:py-6 md:px-8">
           <div className="flex mt-4 gap-4">
             <div onClick={() => navigate(-1)}>
               <FontAwesomeIcon
@@ -97,7 +99,15 @@ const Landing = () => {
             ""
           )}
 
-          <div className="flex flex-col gap-4 mt-8">
+          <div className="flex flex-col gap-4 mt-8 mb-96">
+            {opportunities.length < 1 ? (
+              <p className="text-gray-500">
+                No opportunities were found associated with this account.
+              </p>
+            ) : (
+              ""
+            )}
+
             {opportunities.map((opportunity) => (
               <ListingCard key={opportunity.id} listing={opportunity} />
             ))}

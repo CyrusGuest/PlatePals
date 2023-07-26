@@ -14,7 +14,7 @@ const ListingCard = ({ listing }) => {
       } border-2 rounded-lg border-slate-400 text-gray-500 relative px-3 py-4 shadow-lg text-sm `}
     >
       <h1 className="text-black font-bold text-lg">
-        {listing.title} - {" "}
+        {listing.title} -{" "}
         <span
           className={`${
             listing.status === "Open" ? "text-gray-500" : "text-red-600"
@@ -24,10 +24,8 @@ const ListingCard = ({ listing }) => {
         </span>
       </h1>
 
-      <p>{listing.organization}</p>
-      <p>
-        {listing.city}, {listing.state} {listing.zip}
-      </p>
+      <p>{listing.organizationname}</p>
+      <p>{listing.location}</p>
       <p>{listing.applicants} applicants</p>
 
       <div className="flex gap-2 mt-4">
@@ -40,8 +38,6 @@ const ListingCard = ({ listing }) => {
         <div className="btn bg-primary text-white">
           <FontAwesomeIcon icon={faPencil} className="text-2xl " />
         </div>
-
-        
 
         {dropdownOpen && (
           <div className=" absolute z-10 left-14 mt-8 p-4 w-48 bg-white rounded-md shadow-md text-base">

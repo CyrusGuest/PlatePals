@@ -151,7 +151,7 @@ app.get("/api/v1/opportunities", async (req, res) => {
   }
 
   if (organizationId !== "" && organizationId !== undefined) {
-    searchParams.filterQuery = `organizationid: ${organizationId}`;
+    searchParams.filterQuery = `organizationid: '${organizationId}'`;
   }
 
   if (isNaN(limit)) searchParams.size = 9;
@@ -406,6 +406,8 @@ app.post("/api/v1/opportunities", async (req, res) => {
         organizationId: opportunity.organizationId,
         location: result.data.results[0].formatted_address,
         coordinates: `${result.data.results[0].geometry.location.lat}, ${result.data.results[0].geometry.location.lng}`,
+        status: "Open",
+        applicants: 0,
       },
     };
 

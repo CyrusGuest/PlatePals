@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 const Hero = () => {
   return (
     <div>
-      <h1 className="md:max-w-3xl max-w-sm mx-auto mt-20 md:mt-28 text-center text-4xl md:text-6xl font-bold">
+      <h1 className="md:max-w-3xl max-w-sm mx-auto mt-20 md:mt-28 lg:mt-52 text-center text-4xl md:text-6xl font-bold">
         your <span className="text-gradient font-bold">one-stop-shop</span> for
         food-related volunteer opportunities
       </h1>
