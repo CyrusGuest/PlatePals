@@ -30,7 +30,7 @@ const Landing = () => {
         setLoading(true);
 
         const res = await axios.get(
-          `http://localhost:3001/api/v1/opportunities?organizationId=${User.sub}`
+          `http://platepalsapi-env.eba-gx3yrgpp.us-east-1.elasticbeanstalk.com/api/v1/opportunities?organizationId=${User.sub}`
         );
         setOpportunities(res.data.items);
       } catch (err) {

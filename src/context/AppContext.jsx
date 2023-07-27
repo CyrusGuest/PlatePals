@@ -20,7 +20,7 @@ const AppProvider = ({ children }) => {
         // Otherwise, clear the token from local storage
         try {
           const result = await axios.post(
-            "http://localhost:3001/api/v1/verify_token",
+            "http://platepalsapi-env.eba-gx3yrgpp.us-east-1.elasticbeanstalk.com/api/v1/verify_token",
             { token }
           );
 
