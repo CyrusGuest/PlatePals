@@ -61,7 +61,7 @@ const CreateAccountComp = () => {
 
     try {
       const result = await axios.post(
-        "http://platepalsapi-env.eba-gx3yrgpp.us-east-1.elasticbeanstalk.com/api/v1/create_user",
+        "https://api.platepals.org/api/v1/create_user",
         user
       );
 

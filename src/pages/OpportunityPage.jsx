@@ -34,7 +34,7 @@ const OpportunityPage = () => {
         setLoading(true);
 
         const res = await axios.get(
-          `http://platepalsapi-env.eba-gx3yrgpp.us-east-1.elasticbeanstalk.com/api/v1/opportunities/${organizationId}/${id}`
+          `https://api.platepals.org/api/v1/opportunities/${organizationId}/${id}`
         );
         setOpportunity(res.data);
       } catch (err) {
@@ -59,7 +59,7 @@ const OpportunityPage = () => {
         setLoading(true);
 
         const res = await axios.get(
-          "http://platepalsapi-env.eba-gx3yrgpp.us-east-1.elasticbeanstalk.com/api/v1/opportunities?limit=3"
+          "https://api.platepals.org/api/v1/opportunities?limit=3"
         );
         setOpportunities(res.data.items);
       } catch (err) {

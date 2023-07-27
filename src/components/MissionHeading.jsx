@@ -8,7 +8,7 @@ const MissionHeading = () => {
         Our Mission
       </h1>
       <h3 className="mt-8 md:max-w-3xl max-w-md mx-auto text-xl px-4 md:text-2xl text-[#999999] text-center">
-      Connecting Hearts and Hands for a Hunger-Free World
+        Connecting Hearts and Hands for a Hunger-Free World
       </h3>
     </div>
   );

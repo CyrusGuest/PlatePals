@@ -43,7 +43,7 @@ const ConfirmationComp = () => {
 
     try {
       const result = await axios.post(
-        "http://platepalsapi-env.eba-gx3yrgpp.us-east-1.elasticbeanstalk.com/api/v1/confirm_user",
+        "https://api.platepals.org/api/v1/confirm_user",
         user
       );
 

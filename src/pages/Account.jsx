@@ -30,7 +30,7 @@ const Account = () => {
         setLoading(true);
 
         const res = await axios.get(
-          `http://platepalsapi-env.eba-gx3yrgpp.us-east-1.elasticbeanstalk.com/api/v1/applications?userId=${User.sub}`
+          `https://api.platepals.org/api/v1/applications?userId=${User.sub}`
         );
         setApplications(res.data);
       } catch (err) {

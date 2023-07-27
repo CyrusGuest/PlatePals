@@ -17,7 +17,7 @@ const MissionInfo = () => {
               Nearly 325,000 people are food insecure
             </span>{" "}
             in the Philadelphia Area today. At PlatePals, our mission is to
-            bridge the gap between food kitchens in need and compassionate 
+            bridge the gap between food kitchens in need and compassionate
             individuals eager to make a difference. We believe that everyone
             deserves access to a warm, nourishing meal, and we recognize the
             power of volunteers in creating positive change.

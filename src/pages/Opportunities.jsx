@@ -22,7 +22,7 @@ const Opportunities = () => {
         setLoading(true);
 
         const res = await axios.get(
-          "http://platepalsapi-env.eba-gx3yrgpp.us-east-1.elasticbeanstalk.com/api/v1/opportunities"
+          "https://api.platepals.org/api/v1/opportunities"
         );
         setOpportunities(res.data.items);
       } catch (err) {
