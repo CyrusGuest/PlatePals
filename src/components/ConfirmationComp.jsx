@@ -43,7 +43,7 @@ const ConfirmationComp = () => {
 
     try {
       const result = await axios.post(
-        "https://api.platepals.org/api/v1/confirm_user",
+        "http://api.platepals.org/api/v1/confirm_user",
         user
       );
 

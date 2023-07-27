@@ -34,7 +34,7 @@ const OpportunityPage = () => {
         setLoading(true);
 
         const res = await axios.get(
-          `https://api.platepals.org/api/v1/opportunities/${organizationId}/${id}`
+          `http://api.platepals.org/api/v1/opportunities/${organizationId}/${id}`
         );
         setOpportunity(res.data);
       } catch (err) {
@@ -59,7 +59,7 @@ const OpportunityPage = () => {
         setLoading(true);
 
         const res = await axios.get(
-          "https://api.platepals.org/api/v1/opportunities?limit=3"
+          "http://api.platepals.org/api/v1/opportunities?limit=3"
         );
         setOpportunities(res.data.items);
       } catch (err) {
