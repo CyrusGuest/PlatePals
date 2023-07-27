@@ -175,7 +175,7 @@ const CreateAccountComp = () => {
                 Email
               </label>
               <input
-                className="outline-none btn placeholder:text-white md:placeholder:text-gray-500 border-none shadow-lg rounded-lg p-2 mt-1 texttext-white bg-primary  focus:text-primary focus:bg-white focus:placeholder:text-primary md:text-primary md:bg-white md:focus:bg-primary md:focus:text-white md:focus:placeholder-white transition-all duration-200"
+                className="outline-none btn placeholder:text-white md:placeholder:text-gray-500 border-none shadow-lg rounded-lg p-2 mt-1 text-white bg-primary  focus:text-primary focus:bg-white focus:placeholder:text-primary md:text-primary md:bg-white md:focus:bg-primary md:focus:text-white md:focus:placeholder-white transition-all duration-200"
                 type="text"
                 placeholder="johndoe@gmail.com"
                 onChange={(e) => setEmail(e.target.value)}
