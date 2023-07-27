@@ -3,9 +3,9 @@
   "name": "PlatePals",
   "icons": [
     {
-      "src": "platePals.svg",
+      "src": "platePals.png",
       "sizes": "any",
-      "type": "image/svg"
+      "type": "image/png"
     }
   ],
   "start_url": ".",
