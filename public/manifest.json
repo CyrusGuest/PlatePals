@@ -4,18 +4,8 @@
   "icons": [
     {
       "src": "platePals.svg",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "platePals.svg",
-      "type": "image/svg+xml",
-      "sizes": "192x192"
-    },
-    {
-      "src": "platePals.svg",
-      "type": "image/svg+xml",
-      "sizes": "512x512"
+      "sizes": "any",
+      "type": "image/svg"
     }
   ],
   "start_url": ".",
