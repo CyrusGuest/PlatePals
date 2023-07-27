@@ -61,7 +61,7 @@ const CreateAccountComp = () => {
 
     try {
       const result = await axios.post(
-        "http://api.platepals.org/api/v1/create_user",
+        "https://api.platepals.org/api/v1/create_user",
         user
       );
 
