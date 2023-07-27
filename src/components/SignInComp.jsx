@@ -60,7 +60,7 @@ const SignInComp = () => {
 
     try {
       const result = await axios.post(
-        "http://api.platepals.org/api/v1/signin",
+        "https://api.platepals.org/api/v1/signin",
         user
       );
 

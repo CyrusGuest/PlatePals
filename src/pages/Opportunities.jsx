@@ -22,7 +22,7 @@ const Opportunities = () => {
         setLoading(true);
 
         const res = await axios.get(
-          "http://api.platepals.org/api/v1/opportunities"
+          "https://api.platepals.org/api/v1/opportunities"
         );
         setOpportunities(res.data.items);
       } catch (err) {
