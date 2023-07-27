@@ -62,14 +62,12 @@ const ApplicationWindow = ({ opportunity, setApplying }) => {
     const formData = new FormData();
     formData.append("id", Date.now());
     formData.append("userId", User.sub);
+    formData.append("additionalQuestionsResponses", additionalResponses);
     formData.append("email", email);
     formData.append("resume", resume);
     formData.append("mobile", mobile);
     formData.append("opportunityId", opportunity.id);
-    formData.append(
-      "opportunityLocation",
-      `${opportunity.city}, ${opportunity.state} ${opportunity.zip}`
-    );
+    formData.append("opportunityLocation", `${opportunity.location}`);
     formData.append("opportunityOrganization", opportunity.organizationName);
     formData.append("opportunityTitle", opportunity.title);
     formData.append("organizationId", opportunity.organizationId);

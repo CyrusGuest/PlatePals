@@ -18,6 +18,8 @@ const CreateListingWindow = ({ setCreating }) => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  console.log(User.sub);
+
   const handleSubmission = async () => {
     const opportunity = {
       title,
@@ -296,7 +298,7 @@ const CreateListingWindow = ({ setCreating }) => {
   );
 
   return (
-    <div className="p-10 h-full md:h-fit w-full flex flex-col justify-center z-20 max-w-2xl bg-gray-200 rounded-lg shadow-lg fixed left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2">
+    <div className="p-10 h-full md:h-fit w-full flex flex-col justify-center z-20 max-w-2xl bg-gray-200 rounded-lg shadow-lg fixed left-1/2 md:top-1/2 md:-translate-y-1/2 -translate-x-1/2">
       <div className="flex gap-2">
         <FontAwesomeIcon
           className="text-4xl cursor-pointer my-auto"

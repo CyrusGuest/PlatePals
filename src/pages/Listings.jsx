@@ -24,8 +24,6 @@ const Landing = () => {
 
   let isFetched = false;
 
-  console.log(opportunities);
-
   useEffect(() => {
     const fetchOpportunities = async () => {
       try {
@@ -87,7 +85,10 @@ const Landing = () => {
             </div>
           </div>
 
-          <button className="btn md:hidden bg-primary text-lg text-white w-full mt-4">
+          <button
+            className="btn md:hidden bg-primary text-lg text-white w-full mt-4"
+            onClick={() => setCreating}
+          >
             Create Listing
           </button>
 

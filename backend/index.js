@@ -12,6 +12,7 @@ const {
   GetCommand,
   ScanCommand,
   PutCommand,
+  UpdateCommand,
 } = require("@aws-sdk/lib-dynamodb");
 const cors = require("cors");
 const AmazonCognitoIdentity = require("amazon-cognito-identity-js");
@@ -343,12 +344,27 @@ app.post("/api/v1/apply", upload.single("resume"), async (req, res) => {
       Item: {
         ...application, // Add other application fields here
         id: parseInt(application.id),
-        organizationId: parseInt(application.organizationId),
+        organizationId: application.organizationId,
         resumeKey: `resumes/${resume.filename}`,
       },
     };
 
     await ddbDocClient.send(new PutCommand(dbItem));
+
+    const updateParams = {
+      TableName: "PlatePals",
+      Key: {
+        id: parseInt(application.opportunityId),
+        organizationId: application.organizationId,
+      }, // replace 'id' with the actual primary key of your Opportunities table
+      UpdateExpression: "SET applicants = applicants + :inc",
+      ExpressionAttributeValues: {
+        ":inc": 1,
+      },
+      ReturnValues: "UPDATED_NEW",
+    };
+
+    await ddbDocClient.send(new UpdateCommand(updateParams));
 
     res.json({ message: "Application successfully created" });
 
