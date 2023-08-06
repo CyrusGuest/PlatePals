@@ -23,11 +23,7 @@ const Mission = () => {
 
         <MissionInfo />
 
-        <Divider />
-
         <MissionStats />
-
-        <Divider />
 
         <div className="flex justify-center">
           <img
