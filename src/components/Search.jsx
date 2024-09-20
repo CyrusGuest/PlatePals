@@ -17,7 +17,7 @@ const Search = ({ setOpportunities, setLoading, limit }) => {
       setLoading(true);
 
       const res = await axios.get(
-        `https://api.platepals.org/api/v1/opportunities?searchTerm=${searchTerm}&searchLocation=${searchLocation}&limit=${limit}`
+        `https://pm6auqgswe.us-east-1.awsapprunner.com/api/v1/opportunities?searchTerm=${searchTerm}&searchLocation=${searchLocation}&limit=${limit}`
       );
       setOpportunities(res.data.items);
     } catch (err) {

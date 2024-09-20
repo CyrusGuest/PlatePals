@@ -3,7 +3,6 @@ const morgan = require("morgan");
 const multer = require("multer");
 const axios = require("axios");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const fs = require("fs");
 const path = require("path");
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
@@ -32,8 +31,8 @@ app.use(cors());
 app.use(express.json());
 
 const poolData = {
-  UserPoolId: "us-east-1_7LtzaMZkV",
-  ClientId: "561lvahudrbbbqufclpsfjgadc",
+  UserPoolId: "us-east-1_f1QzYXJEQ",
+  ClientId: "77q32d3braerdks8egsp3hdv7q",
 };
 
 const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
@@ -93,6 +92,10 @@ app.get("/api/v1/opportunities/:organizationId/:id", async (req, res) => {
   }
 });
 
+app.get("/api/v1/basic-hc", (req, res) => {
+  res.status(200).send("Healthy");
+});
+
 app.get("/api/v1/opportunities", async (req, res) => {
   // Extract query parameters
   const {
@@ -105,90 +108,121 @@ app.get("/api/v1/opportunities", async (req, res) => {
   let latitude;
   let longitude;
 
-  if (searchLocation !== "" && searchLocation !== undefined) {
-    const apiKey = "AIzaSyAELzQedRkBkX8gYQZYjMg9dMqDmph_9MM";
+  if (searchLocation) {
+    const apiKey = "AIzaSyAELzQedRkBkX8gYQZYjMg9dMqDmph_9MM"; // Replace with your Google API key
 
-    await axios
-      .get("https://maps.googleapis.com/maps/api/geocode/json", {
-        params: {
-          address: searchLocation,
-          key: apiKey,
-        },
-      })
-      .then((response) => {
-        const results = response.data.results;
-        if (results.length > 0) {
-          const coordinates = results[0].geometry.location;
-          latitude = coordinates.lat;
-          longitude = coordinates.lng;
-        } else {
-          console.log("Location not found");
+    try {
+      const response = await axios.get(
+        "https://maps.googleapis.com/maps/api/geocode/json",
+        {
+          params: {
+            address: searchLocation,
+            key: apiKey,
+          },
         }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+      );
+      const results = response.data.results;
+      if (results.length > 0) {
+        const coordinates = results[0].geometry.location;
+        latitude = coordinates.lat;
+        longitude = coordinates.lng;
+      } else {
+        console.log("Location not found");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
   }
 
-  // Create an instance of the CloudSearchDomainClient
-  const cloudSearchClient = new CloudSearchDomainClient({
-    region: "us-east-1", // Replace with your AWS region
-    endpoint:
-      "https://search-platepals-dno26mtgddk4w77a6qyh3gamlu.us-east-1.cloudsearch.amazonaws.com", // Replace with your CloudSearch endpoint
+  // Create an instance of the OpenSearch client
+  const openSearchClient = new Client({
+    node: "https://vpc-platepals-t2llrqgqwb3qwgjry363ur2k24.aos.us-east-1.on.aws", // Replace with your OpenSearch endpoint
+    auth: {
+      username: "platepals", // Replace with your OpenSearch username
+      password: "4587Duck!", // Replace with your OpenSearch password
+    },
+    ssl: {
+      rejectUnauthorized: false, // Use only if you have self-signed certificates
+    },
   });
 
   // Construct the search query
   let searchParams = {
-    query: "matchall",
-    size: parseInt(limit), // Maximum number of items to return
-    start: lastEvaluatedKey ? parseInt(lastEvaluatedKey) : 0, // Pagination offset
-    queryParser: "structured",
+    index: "your-index-name", // Replace with your OpenSearch index name
+    body: {
+      from: lastEvaluatedKey ? parseInt(lastEvaluatedKey) : 0,
+      size: parseInt(limit),
+      query: {
+        bool: {
+          must: [],
+          filter: [],
+        },
+      },
+      sort: [],
+    },
   };
 
-  // Conditionally add the query parameter if searchTerm is not empty
-  if (searchTerm !== "" && searchTerm !== undefined) {
-    searchParams.query = searchTerm;
-    searchParams.queryParser = undefined;
+  // Add search term to the query if provided
+  if (searchTerm) {
+    searchParams.body.query.bool.must.push({
+      multi_match: {
+        query: searchTerm,
+        fields: ["title", "description"], // Adjust fields as necessary
+      },
+    });
   }
 
-  if (organizationId !== "" && organizationId !== undefined) {
-    searchParams.filterQuery = `organizationid: '${organizationId}'`;
+  // Filter by organizationId if provided
+  if (organizationId) {
+    searchParams.body.query.bool.filter.push({
+      term: {
+        organizationid: organizationId,
+      },
+    });
   }
 
-  if (isNaN(limit)) searchParams.size = 9;
+  // Handle location-based search
+  if (searchLocation && latitude && longitude) {
+    searchParams.body.query.bool.filter.push({
+      geo_distance: {
+        distance: "100km", // Adjust the distance as needed
+        coordinates: {
+          lat: latitude,
+          lon: longitude,
+        },
+      },
+    });
 
-  if (searchLocation !== "" && searchLocation !== undefined) {
-    const exprObj = {
-      distance: `haversin(${latitude}, ${longitude}, coordinates.latitude, coordinates.longitude)`,
-    };
+    // Sort by distance
+    searchParams.body.sort.push({
+      _geo_distance: {
+        coordinates: {
+          lat: latitude,
+          lon: longitude,
+        },
+        order: "asc",
+        unit: "km",
+      },
+    });
+  }
 
-    searchParams.expr = JSON.stringify(exprObj);
-    searchParams.sort = "distance asc";
-    searchParams.return =
-      "distance,coordinates,applicants,description,id,organizationid,organizationname,rate,title,location";
+  // Default sort if no location is provided
+  if (!searchParams.body.sort.length) {
+    searchParams.body.sort.push({ id: "asc" }); // Adjust sorting field as needed
   }
 
   try {
-    // Send the search command to CloudSearch
-    const searchCommand = new SearchCommand(searchParams);
-    const searchResponse = await cloudSearchClient.send(searchCommand);
+    // Execute the search query
+    const searchResponse = await openSearchClient.search(searchParams);
 
     // Extract the search results from the response
-    const items = searchResponse.hits.hit.map((hit) => {
-      const fields = hit.fields;
-      // Convert array values to single elements
-      const item = {};
-      for (const [key, value] of Object.entries(fields)) {
-        item[key] = value[0];
-      }
-      return item;
-    });
+    const hits = searchResponse.body.hits.hits;
+    const items = hits.map((hit) => hit._source);
 
-    // Extract the LastEvaluatedKey for pagination
-    const lastEvaluatedKey =
-      searchResponse.hits.hit.length > 0
-        ? String(searchResponse.hits.hit[searchResponse.hits.hit.length - 1].id)
-        : null;
+    // Calculate the next page offset for pagination
+    const totalHits = searchResponse.body.hits.total.value;
+    const nextOffset = (searchParams.body.from || 0) + hits.length;
+    const lastEvaluatedKey = nextOffset < totalHits ? nextOffset : null;
 
     return res.json({ items, lastEvaluatedKey });
   } catch (err) {
@@ -331,7 +365,7 @@ app.post("/api/v1/apply", upload.single("resume"), async (req, res) => {
     path.join(__dirname, "/uploads/", resume.filename)
   );
   const uploadParams = {
-    Bucket: "plate-pals-resumes",
+    Bucket: "platepalsbucket",
     Key: `resumes/${resume.filename}`, // or any path you want to put file to in your bucket
     Body: fileStream,
   };

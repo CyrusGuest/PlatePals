@@ -30,7 +30,7 @@ const Landing = () => {
         setLoading(true);
 
         const res = await axios.get(
-          `https://api.platepals.org/api/v1/opportunities?organizationId=${User.sub}`
+          `https://pm6auqgswe.us-east-1.awsapprunner.com/api/v1/opportunities?organizationId=${User.sub}`
         );
         setOpportunities(res.data.items);
       } catch (err) {
