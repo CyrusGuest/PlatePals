@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState } from "react";
 import ExploreGraphic from "../images/exploregraphic.png";
 import Loading from "./Loading";
 import { toast } from "react-toastify";
@@ -10,7 +10,7 @@ import { Auth } from "aws-amplify";
 const ConfirmationComp = () => {
   const [loading, setLoading] = useState(false);
   const [code, setCode] = useState("");
-  const { User, setUser } = useContext(AppContext);
+  const { User } = useContext(AppContext);
   let navigate = useNavigate("/opportunities");
 
   const handleSubmission = async (e) => {
@@ -36,7 +36,10 @@ const ConfirmationComp = () => {
     setLoading(true);
 
     try {
-      await axios.post("http://localhost:8080/api/v1/confirm_user", user);
+      await axios.post(
+        "https://pm6auqgswe.us-east-1.awsapprunner.com/api/v1/confirm_user",
+        user
+      );
 
       setLoading(false);
       toast.success("Account successfully created 🎉🥳", {

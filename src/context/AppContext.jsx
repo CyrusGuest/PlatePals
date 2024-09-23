@@ -20,7 +20,7 @@ const AppProvider = ({ children }) => {
         // Otherwise, clear the token from local storage
         try {
           const result = await axios.post(
-            "http://localhost:8080/api/v1/verify_token",
+            "https://pm6auqgswe.us-east-1.awsapprunner.com/api/v1/verify_token",
             { token }
           );
 

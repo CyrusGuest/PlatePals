@@ -23,7 +23,7 @@ const PDFViewer = ({ id, setViewResume, application, associatedListing }) => {
       setLoading(true);
 
       const res = await axios.get(
-        `http://localhost:8080/api/v1/applications/${id}/resume`,
+        `https://pm6auqgswe.us-east-1.awsapprunner.com/api/v1/applications/${id}/resume`,
         { responseType: "blob" }
       );
 

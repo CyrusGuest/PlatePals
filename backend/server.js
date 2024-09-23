@@ -60,15 +60,19 @@ const ddbDocClient = DynamoDBDocumentClient.from(dynamoDb, {
 
 const s3Client = new S3Client({
   region: "us-east-1", // Update this with your S3 region
-  // credentials: {
-  //   accessKeyId: "",
-  //   secretAccessKey: "",
-  // },
+  credentials: {
+    accessKeyId: "AKIAZOZQFWM6BTKB4P7J",
+    secretAccessKey: "bFMTxBbhcCclqgpOYKwZ8zSyMt9NqMgQZqTWyuKo",
+  },
 });
 
 const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
 
 // GET ROUTES
+
+app.get("/api/v1/basic-hc", (req, res) => {
+  res.status(200).send("OK");
+});
 
 app.get("/api/v1/opportunities/:organizationId/:id", async (req, res) => {
   const organizationId = req.params.organizationId;
@@ -138,7 +142,7 @@ app.get("/api/v1/opportunities", async (req, res) => {
   let longitude;
 
   if (searchLocation !== undefined) {
-    // const apiKey = ""; // Replace with your Google API key
+    const apiKey = "AIzaSyAELzQedRkBkX8gYQZYjMg9dMqDmph_9MM"; // Replace with your Google API key
 
     try {
       const response = await axios.get(
@@ -309,7 +313,7 @@ app.get("/api/v1/listings/:listingId/applications", async (req, res) => {
 });
 
 app.get("/api/v1/applications", async (req, res) => {
-  const { userId } = req.query;
+  const { organizationId, userId, opportunityId } = req.query;
 
   const params = {
     TableName: "PlatePalsApplications", // Replace with your DynamoDB table name)
@@ -421,8 +425,8 @@ app.post("/api/v1/verify_token", async (req, res) => {
 app.post("/api/v1/create_user", async (req, res) => {
   const userData = req.body;
 
-  // const clientId = "";
-  // const clientSecret = "";
+  const clientId = "1t05m2f66hgpqiro4pps4hench";
+  const clientSecret = "no8512l17qln74ltd11fbh55j80rgok0e9c77anqrhikebqe0l8";
 
   const secretHash = generateSecretHash(userData.email, clientId, clientSecret);
 
@@ -477,8 +481,8 @@ app.post("/api/v1/create_user", async (req, res) => {
 app.post("/api/v1/signin", async (req, res) => {
   const { email, password } = req.body;
 
-  // const clientId = "";
-  // const clientSecret = "";
+  const clientId = "1t05m2f66hgpqiro4pps4hench";
+  const clientSecret = "no8512l17qln74ltd11fbh55j80rgok0e9c77anqrhikebqe0l8";
 
   const secretHash = generateSecretHash(email, clientId, clientSecret);
 
@@ -490,7 +494,7 @@ app.post("/api/v1/signin", async (req, res) => {
       PASSWORD: password,
       SECRET_HASH: secretHash,
     },
-    // ClientId: "", // Your Cognito app client ID
+    ClientId: "1t05m2f66hgpqiro4pps4hench", // Your Cognito app client ID
   };
 
   const command = new InitiateAuthCommand(input);
@@ -536,8 +540,8 @@ app.post("/api/v1/signin", async (req, res) => {
 app.post("/api/v1/confirm_user", async (req, res) => {
   const { username, confirmationCode } = req.body;
 
-  // const clientId = "";
-  // const clientSecret = "";
+  const clientId = "1t05m2f66hgpqiro4pps4hench";
+  const clientSecret = "no8512l17qln74ltd11fbh55j80rgok0e9c77anqrhikebqe0l8";
 
   const secretHash = generateSecretHash(username, clientId, clientSecret);
 
@@ -628,7 +632,7 @@ app.post("/api/v1/apply", upload.single("resume"), async (req, res) => {
 
 app.post("/api/v1/opportunities", async (req, res) => {
   const opportunity = req.body;
-  // const apiKey = "";
+  const apiKey = "AIzaSyAELzQedRkBkX8gYQZYjMg9dMqDmph_9MM";
 
   try {
     const result = await axios.get(

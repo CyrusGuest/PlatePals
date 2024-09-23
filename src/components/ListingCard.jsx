@@ -1,8 +1,7 @@
 import { faPencil } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import MenuOption from "./MenuOption";
-import React, { useState, useContext } from "react";
-import { AppContext } from "../context/AppContext";
+import React, { useState } from "react";
 
 const ListingCard = ({ listing }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);

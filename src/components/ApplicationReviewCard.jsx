@@ -35,7 +35,7 @@ const ApplicationReviewCard = ({
     setApplications(newApplications);
 
     await axios.put(
-      `http://localhost:8080/api/v1/applications/${application.id}`,
+      `https://pm6auqgswe.us-east-1.awsapprunner.com/api/v1/applications/${application.id}`,
       newApplication
     );
   };

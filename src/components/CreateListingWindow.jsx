@@ -16,9 +16,6 @@ const CreateListingWindow = ({ setCreating }) => {
   const [description, setDescription] = useState("");
   const [additionalQuestions, setAdditionalQuestions] = useState([]);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-
-  console.log(User.sub);
 
   const handleSubmission = async () => {
     const opportunity = {
@@ -35,7 +32,7 @@ const CreateListingWindow = ({ setCreating }) => {
 
     try {
       const result = await axios.post(
-        "http://localhost:8080/api/v1/opportunities",
+        "https://pm6auqgswe.us-east-1.awsapprunner.com/api/v1/opportunities",
         opportunity
       );
 
@@ -53,8 +50,6 @@ const CreateListingWindow = ({ setCreating }) => {
         throw new Error("Failed to create opportunity");
       }
 
-      setLoading(false);
-
       toast.success("Opportuity created ✅", {
         position: "top-right",
         autoClose: 5000,
@@ -68,8 +63,6 @@ const CreateListingWindow = ({ setCreating }) => {
 
       setCreating(false);
     } catch (err) {
-      setLoading(false);
-
       if (err.response) {
         toast.error(err.response.data.error, {
           position: "top-right",
