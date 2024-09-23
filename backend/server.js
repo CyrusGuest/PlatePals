@@ -2,69 +2,73 @@ const express = require("express");
 const morgan = require("morgan");
 const multer = require("multer");
 const axios = require("axios");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} = require("@aws-sdk/client-s3");
 const fs = require("fs");
 const path = require("path");
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const {
   DynamoDBDocumentClient,
-  GetCommand,
   ScanCommand,
   PutCommand,
   UpdateCommand,
+  GetCommand,
 } = require("@aws-sdk/lib-dynamodb");
 const cors = require("cors");
-const AmazonCognitoIdentity = require("amazon-cognito-identity-js");
 const {
   CognitoIdentityProviderClient,
   GetUserCommand,
+  SignUpCommand,
+  ConfirmSignUpCommand,
+  InitiateAuthCommand,
 } = require("@aws-sdk/client-cognito-identity-provider");
-const {
-  CloudSearchDomainClient,
-  SearchCommand,
-} = require("@aws-sdk/client-cloudsearch-domain");
+const crypto = require("crypto");
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
+// MIDDLEWARE
 app.use(morgan("dev"));
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: false,
+  })
+);
+
+// Handle preflight OPTIONS request for all routes
+app.options("*", cors());
 app.use(express.json());
 
-const poolData = {
-  UserPoolId: "us-east-1_f1QzYXJEQ",
-  ClientId: "77q32d3braerdks8egsp3hdv7q",
-};
+// Function to compute the secret hash
+function generateSecretHash(username, clientId, clientSecret) {
+  const hmac = crypto.createHmac("sha256", clientSecret);
+  hmac.update(username + clientId);
+  return hmac.digest("base64");
+}
 
-const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+// Initializing AWS Clients
+
 const dynamoDb = new DynamoDBClient({ region: "us-east-1" });
 const ddbDocClient = DynamoDBDocumentClient.from(dynamoDb, {
   marshallOptions: { removeUndefinedValues: true },
 });
+
 const s3Client = new S3Client({
   region: "us-east-1", // Update this with your S3 region
+  credentials: {
+    accessKeyId: "AKIAZOZQFWM6BTKB4P7J",
+    secretAccessKey: "bFMTxBbhcCclqgpOYKwZ8zSyMt9NqMgQZqTWyuKo",
+  },
 });
 
-app.post("/api/v1/verify_token", async (req, res) => {
-  const token = req.body.token;
+const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
 
-  const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
-
-  const params = {
-    AccessToken: token,
-  };
-
-  try {
-    const command = new GetUserCommand(params);
-    const response = await client.send(command);
-
-    // Token is valid, set the user in state or perform any other necessary actions
-    const user = response.UserAttributes;
-    res.json({ statusCode: 200, user });
-  } catch (error) {
-    // Token is invalid or expired, clear the token from local storage
-    res.json({ statusCode: 400, error, user: null });
-  }
-});
+// GET ROUTES
 
 app.get("/api/v1/opportunities/:organizationId/:id", async (req, res) => {
   const organizationId = req.params.organizationId;
@@ -92,8 +96,33 @@ app.get("/api/v1/opportunities/:organizationId/:id", async (req, res) => {
   }
 });
 
-app.get("/api/v1/basic-hc", (req, res) => {
-  res.status(200).send("Healthy");
+app.get("/api/v1/opportunities/:organizationId", async (req, res) => {
+  const organizationId = req.params.organizationId;
+
+  const params = {
+    TableName: "PlatePals",
+    FilterExpression: "#orgId = :orgId",
+    ExpressionAttributeNames: {
+      "#orgId": "organizationId",
+    },
+    ExpressionAttributeValues: {
+      ":orgId": organizationId,
+    },
+  };
+
+  try {
+    const command = new ScanCommand(params);
+    const response = await ddbDocClient.send(command);
+
+    if (response.Items && response.Items.length > 0) {
+      res.json(response.Items);
+    } else {
+      res.status(404).send("No opportunities found for this organization");
+    }
+  } catch (error) {
+    console.error("Error retrieving opportunities:", error);
+    res.status(500).send("Error retrieving opportunities");
+  }
 });
 
 app.get("/api/v1/opportunities", async (req, res) => {
@@ -108,7 +137,7 @@ app.get("/api/v1/opportunities", async (req, res) => {
   let latitude;
   let longitude;
 
-  if (searchLocation) {
+  if (searchLocation !== undefined) {
     const apiKey = "AIzaSyAELzQedRkBkX8gYQZYjMg9dMqDmph_9MM"; // Replace with your Google API key
 
     try {
@@ -127,234 +156,421 @@ app.get("/api/v1/opportunities", async (req, res) => {
         latitude = coordinates.lat;
         longitude = coordinates.lng;
       } else {
-        console.log("Location not found");
+        console.error("Location not found");
       }
     } catch (error) {
       console.error("Error:", error);
     }
   }
 
-  // Create an instance of the OpenSearch client
-  const openSearchClient = new Client({
-    node: "https://vpc-platepals-t2llrqgqwb3qwgjry363ur2k24.aos.us-east-1.on.aws", // Replace with your OpenSearch endpoint
-    auth: {
-      username: "platepals", // Replace with your OpenSearch username
-      password: "4587Duck!", // Replace with your OpenSearch password
-    },
-    ssl: {
-      rejectUnauthorized: false, // Use only if you have self-signed certificates
-    },
-  });
+  // Create an instance of the DynamoDB client
+  const dynamoDBClient = new DynamoDBClient({ region: "us-east-1" }); // Replace with your AWS region
 
-  // Construct the search query
-  let searchParams = {
-    index: "your-index-name", // Replace with your OpenSearch index name
-    body: {
-      from: lastEvaluatedKey ? parseInt(lastEvaluatedKey) : 0,
-      size: parseInt(limit),
-      query: {
-        bool: {
-          must: [],
-          filter: [],
-        },
-      },
-      sort: [],
-    },
+  // Construct the scan parameters
+  let scanParams = {
+    TableName: "PlatePals", // Replace with your DynamoDB table name
+    Limit: parseInt(limit),
+    ExclusiveStartKey: lastEvaluatedKey
+      ? JSON.parse(lastEvaluatedKey)
+      : undefined,
   };
 
-  // Add search term to the query if provided
+  // Filter expression components
+  let filterExpressions = [];
+  let expressionAttributeNames = {};
+  let expressionAttributeValues = {};
+
+  // Add search term to the filter if provided
   if (searchTerm) {
-    searchParams.body.query.bool.must.push({
-      multi_match: {
-        query: searchTerm,
-        fields: ["title", "description"], // Adjust fields as necessary
-      },
-    });
+    // DynamoDB doesn't support full-text search, so we need to implement a workaround
+    // For example, we can use a contains function on the fields
+    filterExpressions.push(
+      "(contains(#title, :searchTerm) OR contains(#description, :searchTerm))"
+    );
+    expressionAttributeNames["#title"] = "title";
+    expressionAttributeNames["#description"] = "description";
+    expressionAttributeValues[":searchTerm"] = { S: searchTerm };
   }
 
   // Filter by organizationId if provided
   if (organizationId) {
-    searchParams.body.query.bool.filter.push({
-      term: {
-        organizationid: organizationId,
-      },
-    });
+    filterExpressions.push("#organizationId = :organizationId");
+    expressionAttributeNames["#organizationId"] = "organizationId";
+    expressionAttributeValues[":organizationId"] = { S: organizationId };
   }
 
-  // Handle location-based search
-  if (searchLocation && latitude && longitude) {
-    searchParams.body.query.bool.filter.push({
-      geo_distance: {
-        distance: "100km", // Adjust the distance as needed
-        coordinates: {
-          lat: latitude,
-          lon: longitude,
-        },
-      },
-    });
-
-    // Sort by distance
-    searchParams.body.sort.push({
-      _geo_distance: {
-        coordinates: {
-          lat: latitude,
-          lon: longitude,
-        },
-        order: "asc",
-        unit: "km",
-      },
-    });
-  }
-
-  // Default sort if no location is provided
-  if (!searchParams.body.sort.length) {
-    searchParams.body.sort.push({ id: "asc" }); // Adjust sorting field as needed
+  // Build the filter expression
+  if (filterExpressions.length > 0) {
+    scanParams.FilterExpression = filterExpressions.join(" AND ");
+    scanParams.ExpressionAttributeNames = expressionAttributeNames;
+    scanParams.ExpressionAttributeValues = expressionAttributeValues;
   }
 
   try {
-    // Execute the search query
-    const searchResponse = await openSearchClient.search(searchParams);
+    // Execute the scan command
+    const scanCommand = new ScanCommand(scanParams);
+    const scanResponse = await dynamoDBClient.send(scanCommand);
 
-    // Extract the search results from the response
-    const hits = searchResponse.body.hits.hits;
-    const items = hits.map((hit) => hit._source);
+    // Unmarshall the items
+    const items = scanResponse.Items;
+    // const items = scanResponse.Items.map((item) => unmarshall(item));
 
-    // Calculate the next page offset for pagination
-    const totalHits = searchResponse.body.hits.total.value;
-    const nextOffset = (searchParams.body.from || 0) + hits.length;
-    const lastEvaluatedKey = nextOffset < totalHits ? nextOffset : null;
+    // Handle geospatial filtering manually
+    if (searchLocation && latitude && longitude) {
+      // Assuming your items have 'latitude' and 'longitude' attributes
+      const radiusInKm = 100; // Adjust the distance as needed
+      const earthRadiusInKm = 6371;
 
-    return res.json({ items, lastEvaluatedKey });
+      const filteredItems = items.filter((item) => {
+        if (item.latitude && item.longitude) {
+          const dLat = (item.latitude - latitude) * (Math.PI / 180);
+          const dLon = (item.longitude - longitude) * (Math.PI / 180);
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(latitude * (Math.PI / 180)) *
+              Math.cos(item.latitude * (Math.PI / 180)) *
+              Math.sin(dLon / 2) *
+              Math.sin(dLon / 2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const distance = earthRadiusInKm * c;
+          return distance <= radiusInKm;
+        }
+        return false;
+      });
+
+      // Sort by distance
+      filteredItems.sort((a, b) => {
+        const dLatA = (a.latitude - latitude) * (Math.PI / 180);
+        const dLonA = (a.longitude - longitude) * (Math.PI / 180);
+        const aA =
+          Math.sin(dLatA / 2) * Math.sin(dLatA / 2) +
+          Math.cos(latitude * (Math.PI / 180)) *
+            Math.cos(a.latitude * (Math.PI / 180)) *
+            Math.sin(dLonA / 2) *
+            Math.sin(dLonA / 2);
+        const cA = 2 * Math.atan2(Math.sqrt(aA), Math.sqrt(1 - aA));
+        const distanceA = earthRadiusInKm * cA;
+
+        const dLatB = (b.latitude - latitude) * (Math.PI / 180);
+        const dLonB = (b.longitude - longitude) * (Math.PI / 180);
+        const aB =
+          Math.sin(dLatB / 2) * Math.sin(dLatB / 2) +
+          Math.cos(latitude * (Math.PI / 180)) *
+            Math.cos(b.latitude * (Math.PI / 180)) *
+            Math.sin(dLonB / 2) *
+            Math.sin(dLonB / 2);
+        const cB = 2 * Math.atan2(Math.sqrt(aB), Math.sqrt(1 - aB));
+        const distanceB = earthRadiusInKm * cB;
+
+        return distanceA - distanceB;
+      });
+
+      // Limit the results after filtering and sorting
+      const limitedItems = filteredItems.slice(0, limit);
+      const lastEvaluatedKey = scanResponse.LastEvaluatedKey
+        ? JSON.stringify(scanResponse.LastEvaluatedKey)
+        : null;
+
+      return res.json({ items: limitedItems, lastEvaluatedKey });
+    } else {
+      // No location-based filtering needed
+      const lastEvaluatedKey = scanResponse.LastEvaluatedKey
+        ? JSON.stringify(scanResponse.LastEvaluatedKey)
+        : null;
+
+      return res.json({ items, lastEvaluatedKey });
+    }
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Could not load items" });
   }
 });
 
-app.post("/api/v1/create_user", (req, res) => {
+app.get("/api/v1/listings/:listingId/applications", async (req, res) => {
+  const listingId = req.params.listingId;
+  const params = {
+    TableName: "PlatePalsApplications", // Replace with your DynamoDB table name)
+    FilterExpression: "opportunityId = :sub",
+    ExpressionAttributeValues: {
+      ":sub": listingId,
+    },
+  };
+
+  try {
+    const command = new ScanCommand(params);
+    const data = await dynamoDb.send(command);
+
+    const applications = data.Items;
+    return res.json(applications);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Could not load applications" });
+  }
+});
+
+app.get("/api/v1/applications", async (req, res) => {
+  const { organizationId, userId, opportunityId } = req.query;
+
+  const params = {
+    TableName: "PlatePalsApplications", // Replace with your DynamoDB table name)
+    FilterExpression: "userId = :sub",
+    ExpressionAttributeValues: {
+      ":sub": userId,
+    },
+  };
+
+  try {
+    const command = new ScanCommand(params);
+    const data = await dynamoDb.send(command);
+
+    const applications = data.Items;
+    return res.json(applications);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Could not load applications" });
+  }
+});
+
+app.get("/api/v1/listings/:listingId/applications", async (req, res) => {
+  const listingId = req.params.listingId;
+  const params = {
+    TableName: "PlatePalsApplications", // Replace with your DynamoDB table name)
+    FilterExpression: "opportunityId = :sub",
+    ExpressionAttributeValues: {
+      ":sub": listingId,
+    },
+  };
+
+  try {
+    const command = new ScanCommand(params);
+    const data = await dynamoDb.send(command);
+
+    const applications = data.Items;
+    return res.json(applications);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Could not load applications" });
+  }
+});
+
+app.get("/api/v1/applications/:id/resume", async (req, res) => {
+  let application;
+  const id = parseInt(req.params.id);
+
+  try {
+    const params = {
+      TableName: "PlatePalsApplications", // Replace with your DynamoDB table name
+      FilterExpression: "id = :sub",
+      ExpressionAttributeValues: {
+        ":sub": id,
+      },
+    };
+
+    const command = new ScanCommand(params);
+    const data = await dynamoDb.send(command);
+
+    application = data.Items[0];
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Could not load application" });
+  }
+
+  try {
+    const params = {
+      Bucket: "platepalsbucket",
+      Key: application.resumeKey,
+    };
+
+    const command = new GetObjectCommand(params);
+    const resume = await s3Client.send(command);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", 'inline; filename="resume.pdf"');
+
+    resume.Body.pipe(res);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Could not load resume PDF" });
+  }
+});
+
+// POST ROUTES
+
+app.post("/api/v1/verify_token", async (req, res) => {
+  const token = req.body.token;
+
+  const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
+
+  const params = {
+    AccessToken: token,
+  };
+
+  try {
+    const command = new GetUserCommand(params);
+    const response = await client.send(command);
+
+    // Token is valid, set the user in state or perform any other necessary actions
+    const user = response.UserAttributes;
+    res.json({ statusCode: 200, user });
+  } catch (error) {
+    // Token is invalid or expired, clear the token from local storage
+    res.json({ statusCode: 400, error, user: null });
+  }
+});
+
+app.post("/api/v1/create_user", async (req, res) => {
   const userData = req.body;
 
-  let attributeList = [];
+  const clientId = "1t05m2f66hgpqiro4pps4hench";
+  const clientSecret = "no8512l17qln74ltd11fbh55j80rgok0e9c77anqrhikebqe0l8";
 
-  const dataEmail = {
-    Name: "email",
-    Value: userData.email,
+  const secretHash = generateSecretHash(userData.email, clientId, clientSecret);
+
+  const input = {
+    ClientId: clientId,
+    SecretHash: secretHash, // Required when using client secret
+    Username: userData.email, // required
+    Password: userData.password, // required
+    UserAttributes: [
+      {
+        Name: "name", // required
+        Value: userData.name,
+      },
+      {
+        Name: "email", // required
+        Value: userData.email,
+      },
+      {
+        Name: "custom:account_type", // example of custom attribute
+        Value: userData.account_type,
+      },
+    ],
   };
 
-  const attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(
-    dataEmail
-  );
+  const command = new SignUpCommand(input);
 
-  const dataName = {
-    Name: "name",
-    Value: userData.name,
-  };
+  try {
+    const response = await client.send(command);
 
-  const attributeName = new AmazonCognitoIdentity.CognitoUserAttribute(
-    dataName
-  );
+    res.json({
+      statusCode: 200,
+      message: "Sign up successful",
+      user: {
+        sub: response.UserSub,
+        username: userData.name.replace(/\s/g, ""),
+        email: userData.email,
+        name: userData.name,
+        account_type: userData.account_type,
+      },
+    });
 
-  const dataAccountType = {
-    Name: "custom:account_type",
-    Value: userData.account_type,
-  };
+    return response;
+  } catch (error) {
+    console.error("Error during sign-up:", error);
 
-  const attributeAccountType = new AmazonCognitoIdentity.CognitoUserAttribute(
-    dataAccountType
-  );
+    res.json({ statusCode: 400, error: error.message });
 
-  attributeList.push(attributeEmail);
-  attributeList.push(attributeName);
-  attributeList.push(attributeAccountType);
-
-  userPool.signUp(
-    userData.name.replace(/\s/g, ""),
-    userData.password,
-    attributeList,
-    null,
-    (err, result) => {
-      if (err) {
-        console.error(err);
-        res.json({ statusCode: 400, user: null, error: err.message });
-        return;
-      }
-
-      const cognitoUser = result.user;
-      res.json({ statusCode: 200, user: cognitoUser });
-    }
-  );
+    throw error;
+  }
 });
 
 app.post("/api/v1/signin", async (req, res) => {
   const { email, password } = req.body;
 
-  const authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(
-    {
-      Username: email,
-      Password: password,
-    }
-  );
+  const clientId = "1t05m2f66hgpqiro4pps4hench";
+  const clientSecret = "no8512l17qln74ltd11fbh55j80rgok0e9c77anqrhikebqe0l8";
 
-  const userData = {
-    Username: email,
-    Pool: userPool,
+  const secretHash = generateSecretHash(email, clientId, clientSecret);
+
+  // Input for InitiateAuthCommand
+  const input = {
+    AuthFlow: "USER_PASSWORD_AUTH", // Set the authentication flow to user-password-based auth
+    AuthParameters: {
+      USERNAME: email,
+      PASSWORD: password,
+      SECRET_HASH: secretHash,
+    },
+    ClientId: "1t05m2f66hgpqiro4pps4hench", // Your Cognito app client ID
   };
-  const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
 
-  cognitoUser.authenticateUser(authenticationDetails, {
-    onSuccess: async (result) => {
-      const token = result.getAccessToken().getJwtToken();
-      const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
+  const command = new InitiateAuthCommand(input);
 
-      const params = {
-        AccessToken: token,
-      };
+  try {
+    // Send the authentication request
+    const response = await client.send(command);
 
-      try {
-        const command = new GetUserCommand(params);
-        const response = await client.send(command);
+    // Check if the response contains an AuthenticationResult
+    if (response.AuthenticationResult) {
+      const token = response.AuthenticationResult.AccessToken;
 
-        // Token is valid, set the user in state or perform any other necessary actions
-        const user = response.UserAttributes;
-        res.send({
-          statusCode: 200,
-          user: user,
-          accessToken: token,
-        });
-      } catch (error) {
-        // Token is invalid or expired, clear the token from local storage
-        res.json({ statusCode: 400, error, user: null });
-      }
-    },
+      // Now, use the token to get the user attributes
+      const getUserCommand = new GetUserCommand({ AccessToken: token });
+      const userResponse = await client.send(getUserCommand);
 
-    onFailure: (err) => {
-      res.status(401).send({
-        statusCode: 401,
-        error: err.message,
+      const userAttributes = userResponse.UserAttributes;
+
+      // Send back the access token and user information
+      res.status(200).send({
+        statusCode: 200,
+        user: userAttributes,
+        accessToken: token,
       });
-    },
-  });
+    } else {
+      // Handle cases where a challenge response is required (like MFA)
+      res.status(400).send({
+        statusCode: 400,
+        message: "Additional challenge required",
+        challenge: response.ChallengeName,
+        session: response.Session,
+      });
+    }
+  } catch (error) {
+    // Handle authentication errors
+    res.status(401).send({
+      statusCode: 401,
+      error: error.message,
+    });
+  }
 });
 
-app.post("/api/v1/confirm_user", (req, res) => {
+app.post("/api/v1/confirm_user", async (req, res) => {
   const { username, confirmationCode } = req.body;
 
-  const userData = {
-    Username: username,
-    Pool: userPool,
+  const clientId = "1t05m2f66hgpqiro4pps4hench";
+  const clientSecret = "no8512l17qln74ltd11fbh55j80rgok0e9c77anqrhikebqe0l8";
+
+  const secretHash = generateSecretHash(username, clientId, clientSecret);
+
+  const input = {
+    ClientId: clientId, // required, Cognito app client id
+    SecretHash: secretHash, // required, computed secret hash
+    Username: username, // required, from request body
+    ConfirmationCode: confirmationCode, // required, from request body
+    ForceAliasCreation: false, // set to true or false based on your use case
   };
 
-  const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+  // Create the command
+  const command = new ConfirmSignUpCommand(input);
 
-  cognitoUser.confirmRegistration(confirmationCode, true, (err, result) => {
-    if (err) {
-      console.error(err);
-      res.send({ statusCode: 400, user: null, error: err.message });
-      return;
-    }
-    // if successful, the result will be 'SUCCESS'
-    res.send({ statusCode: 200, user: cognitoUser, result });
-  });
+  try {
+    // Send the command to AWS Cognito
+    const response = await client.send(command);
+
+    // If successful, response will include confirmation details
+    res.status(200).send({
+      statusCode: 200,
+      user: username,
+      result: response,
+    });
+  } catch (error) {
+    // Handle any errors
+    console.error(error);
+    res.status(400).send({
+      statusCode: 400,
+      user: null,
+      error: error.message,
+    });
+  }
 });
 
 app.post("/api/v1/apply", upload.single("resume"), async (req, res) => {
@@ -406,30 +622,7 @@ app.post("/api/v1/apply", upload.single("resume"), async (req, res) => {
       if (err) throw err;
     });
   } catch (err) {
-    console.log("Error", err);
-  }
-});
-
-app.get("/api/v1/applications", async (req, res) => {
-  const { organizationId, userId, opportunityId } = req.query;
-
-  const params = {
-    TableName: "PlatePalsApplications", // Replace with your DynamoDB table name)
-    FilterExpression: "userId = :sub",
-    ExpressionAttributeValues: {
-      ":sub": userId,
-    },
-  };
-
-  try {
-    const command = new ScanCommand(params);
-    const data = await dynamoDb.send(command);
-
-    const applications = data.Items;
-    return res.json(applications);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Could not load applications" });
+    console.error("Error", err);
   }
 });
 
@@ -461,14 +654,40 @@ app.post("/api/v1/opportunities", async (req, res) => {
       },
     };
 
-    console.log(dbItem);
-
     await ddbDocClient.send(new PutCommand(dbItem));
 
-    res.json({ message: "Opportunity successfully created" });
+    res.status(200).json({ message: "Opportunity successfully created" });
   } catch (error) {
     console.error(`Failed to get location: ${error}`);
     res.json({ message: `Failed to create opportunity: ${error}` });
+  }
+});
+
+// PUT ROUTES
+
+app.put("/api/v1/applications/:id", async (req, res) => {
+  const id = parseInt(req.params.id);
+  const updatedApplication = req.body;
+
+  try {
+    const dbItem = {
+      TableName: "PlatePalsApplications",
+      Key: {
+        id,
+        organizationId: updatedApplication.organizationId,
+      },
+      UpdateExpression: "SET reviewed = :status",
+      ExpressionAttributeValues: {
+        ":status": updatedApplication.reviewed,
+      },
+      ReturnValues: "ALL_NEW",
+    };
+
+    await ddbDocClient.send(new UpdateCommand(dbItem));
+
+    res.json({ message: "Application successfully updated" });
+  } catch (error) {
+    res.json({ message: `Failed to update application: ${error}` });
   }
 });
 

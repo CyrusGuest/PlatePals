@@ -36,9 +36,6 @@ const SignInComp = () => {
         theme: "light",
       });
 
-    console.log(emailRegex.test(email));
-    console.log(emailRegex.test(password));
-
     if (!emailRegex.test(email) || !passwordRegex.test(password))
       return toast.error("Please enter a valid email/password", {
         position: "top-right",
@@ -60,21 +57,23 @@ const SignInComp = () => {
 
     try {
       const result = await axios.post(
-        "https://pm6auqgswe.us-east-1.awsapprunner.com/api/v1/signin",
+        "http://localhost:8080/api/v1/signin",
         user
       );
 
       setLoading(false);
 
+      console.log(result);
+
       const token = result.data.accessToken;
       localStorage.setItem("authToken", token);
 
       setUser({
-        sub: result.data.user[0].Value,
-        account_type: result.data.user[1].Value,
-        email_verified: result.data.user[2].Value,
-        name: result.data.user[3].Value,
-        email: result.data.user[4].Value,
+        email: result.data.user[0].Value,
+        email_verified: result.data.user[1].Value,
+        name: result.data.user[2].Value,
+        account_type: result.data.user[3].Value,
+        sub: result.data.user[4].Value,
       });
 
       toast.success("Sign in succesful 🎉🥳", {

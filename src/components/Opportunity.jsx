@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 const Opportunity = ({ opportunity }) => {
   return (
     <Link
-      to={`/opportunities/${opportunity.organizationid}/${opportunity.id}`}
+      to={`/opportunities/${opportunity.organizationId}/${opportunity.id}`}
       className="m-4 border-2 rounded-lg p-4 shadow-lg cursor-pointer"
     >
       <h1 className="font-bold">{opportunity.title}</h1>

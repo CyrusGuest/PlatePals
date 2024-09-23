@@ -20,7 +20,7 @@ const AppProvider = ({ children }) => {
         // Otherwise, clear the token from local storage
         try {
           const result = await axios.post(
-            "https://pm6auqgswe.us-east-1.awsapprunner.com/api/v1/verify_token",
+            "http://localhost:8080/api/v1/verify_token",
             { token }
           );
 
@@ -37,11 +37,11 @@ const AppProvider = ({ children }) => {
             });
 
             setUser({
-              sub: result.data.user[0].Value,
-              account_type: result.data.user[1].Value,
-              email_verified: result.data.user[2].Value,
-              name: result.data.user[3].Value,
-              email: result.data.user[4].Value,
+              email: result.data.user[0].Value,
+              email_verified: result.data.user[1].Value,
+              name: result.data.user[2].Value,
+              account_type: result.data.user[3].Value,
+              sub: result.data.user[4].Value,
             });
           }
         } catch (error) {
@@ -60,6 +60,8 @@ const AppProvider = ({ children }) => {
 
     // Set the user in state to null
     setUser({});
+
+    window.location.replace("http://localhost:3000");
   };
 
   return (

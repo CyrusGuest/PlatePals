@@ -13,14 +13,8 @@ const ConfirmationComp = () => {
   const { User, setUser } = useContext(AppContext);
   let navigate = useNavigate("/opportunities");
 
-  useEffect(() => {
-    if (User.email) navigate("/opportunities");
-  }, [User.email, navigate]);
-
   const handleSubmission = async (e) => {
     e.preventDefault();
-
-    console.log(User);
 
     if (code === "")
       return toast.error("Please fill out all fields", {
@@ -35,17 +29,14 @@ const ConfirmationComp = () => {
       });
 
     const user = {
-      username: User.username,
+      username: User.email,
       confirmationCode: code,
     };
 
     setLoading(true);
 
     try {
-      const result = await axios.post(
-        "https://pm6auqgswe.us-east-1.awsapprunner.com/api/v1/confirm_user",
-        user
-      );
+      await axios.post("http://localhost:8080/api/v1/confirm_user", user);
 
       setLoading(false);
       toast.success("Account successfully created 🎉🥳", {
@@ -59,7 +50,6 @@ const ConfirmationComp = () => {
         theme: "light",
       });
 
-      setUser(result.data.user);
       Auth.currentSession()
         .then((session) => {
           // Store the session in local storage or session storage

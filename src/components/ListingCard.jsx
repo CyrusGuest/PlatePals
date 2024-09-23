@@ -45,10 +45,13 @@ const ListingCard = ({ listing }) => {
             <ul className="flex flex-col gap-2">
               <MenuOption
                 title="Your Listing"
-                to={`/opportunities/${listing.organizationid}/${listing.id}`}
+                to={`/opportunities/${listing.organizationId}/${listing.id}`}
               />
 
-              <MenuOption title="Applicants" />
+              <MenuOption
+                title="Applicants"
+                to={`/listings/${listing.id}/applications`}
+              />
             </ul>
           </div>
         )}

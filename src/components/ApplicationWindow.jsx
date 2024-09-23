@@ -60,6 +60,7 @@ const ApplicationWindow = ({ opportunity, setApplying }) => {
       });
 
     const formData = new FormData();
+    formData.append("name", User.name);
     formData.append("id", Date.now());
     formData.append("userId", User.sub);
     formData.append("additionalQuestionsResponses", additionalResponses);
@@ -80,10 +81,7 @@ const ApplicationWindow = ({ opportunity, setApplying }) => {
     setLoading(true);
 
     try {
-      const result = await axios.post(
-        "https://pm6auqgswe.us-east-1.awsapprunner.com/api/v1/apply",
-        formData
-      );
+      await axios.post("http://localhost:8080/api/v1/apply", formData);
 
       setLoading(false);
 

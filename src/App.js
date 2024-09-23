@@ -13,11 +13,13 @@ import Account from "./pages/Account";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Listings from "./pages/Listings";
 import ResetPassword from "./pages/ResetPassword";
+import Applications from "./pages/Applications";
+import ApplicationPage from "./pages/ApplicationPage";
 
 function App() {
   return (
-    <AppProvider>
-      <Router>
+    <Router>
+      <AppProvider>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/mission" element={<Mission />} />
@@ -46,10 +48,26 @@ function App() {
             path="/opportunities/:organizationId/:id"
             element={<OpportunityPage />}
           />
+          <Route
+            path="/listings/:listingId/applications"
+            element={
+              <ProtectedRoute>
+                <Applications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/listings/:listingId/applications/:id"
+            element={
+              <ProtectedRoute>
+                <ApplicationPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
         <ToastContainer />
-      </Router>
-    </AppProvider>
+      </AppProvider>
+    </Router>
   );
 }
 
