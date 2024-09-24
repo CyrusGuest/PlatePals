@@ -38,7 +38,7 @@ Clone the repository:
 
 bash
 Copy code
-git clone https://github.com/yourusername/platepals.git
+git clone https://github.com/cyrusguest/platepals.git
 cd platepals
 Install the dependencies:
 
