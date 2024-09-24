@@ -2,7 +2,7 @@
 PlatePals is a web platform designed to connect individuals with food-related volunteer opportunities. Think of it as "LinkedIn for Food Volunteers," where organizations and volunteers can engage and collaborate to help combat food insecurity and support food-related causes.
 
 # 🚀 Live URL
-PlatePals Web App
+[PlatePals Web App](https://main.d2ujx72xrafh9l.amplifyapp.com/)
 
 # 🛠️ Technologies Used
 This project leverages a wide range of AWS services and modern web technologies to provide a responsive and scalable solution:
