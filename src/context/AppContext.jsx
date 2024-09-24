@@ -61,7 +61,7 @@ const AppProvider = ({ children }) => {
     // Set the user in state to null
     setUser({});
 
-    window.location.replace("http://localhost:3000");
+    window.location.replace("https://main.d2ujx72xrafh9l.amplifyapp.com");
   };
 
   return (
