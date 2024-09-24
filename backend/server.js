@@ -1,3 +1,134 @@
+/**
+ * @file server.js
+ * @description This file contains the main server code for the PlatePals backend. It sets up an Express server with various routes for handling API requests related to opportunities, applications, and user authentication. It also integrates with AWS services such as DynamoDB, S3, and Cognito.
+ */
+
+/**
+ * Middleware setup for logging, CORS, and JSON parsing.
+ */
+
+/**
+ * Generates a secret hash for AWS Cognito.
+ * @param {string} username - The username.
+ * @param {string} clientId - The client ID.
+ * @param {string} clientSecret - The client secret.
+ * @returns {string} - The generated secret hash.
+ */
+
+/**
+ * Initializes AWS clients for DynamoDB, S3, and Cognito.
+ */
+
+/**
+ * Basic health check route.
+ * @route GET /api/v1/basic-hc
+ * @returns {string} - "OK" if the server is running.
+ */
+
+/**
+ * Retrieves a specific opportunity by organization ID and opportunity ID.
+ * @route GET /api/v1/opportunities/:organizationId/:id
+ * @param {string} organizationId - The ID of the organization.
+ * @param {number} id - The ID of the opportunity.
+ * @returns {Object} - The opportunity data.
+ */
+
+/**
+ * Retrieves all opportunities for a specific organization.
+ * @route GET /api/v1/opportunities/:organizationId
+ * @param {string} organizationId - The ID of the organization.
+ * @returns {Array} - A list of opportunities.
+ */
+
+/**
+ * Retrieves opportunities with optional search parameters.
+ * @route GET /api/v1/opportunities
+ * @param {string} [searchTerm] - The search term.
+ * @param {string} [searchLocation] - The search location.
+ * @param {number} [limit=9] - The maximum number of results to return.
+ * @param {string} [lastEvaluatedKey] - The last evaluated key for pagination.
+ * @param {string} [organizationId] - The ID of the organization.
+ * @returns {Object} - A list of opportunities and the last evaluated key.
+ */
+
+/**
+ * Retrieves applications for a specific listing.
+ * @route GET /api/v1/listings/:listingId/applications
+ * @param {string} listingId - The ID of the listing.
+ * @returns {Array} - A list of applications.
+ */
+
+/**
+ * Retrieves applications for a specific user.
+ * @route GET /api/v1/applications
+ * @param {string} userId - The ID of the user.
+ * @returns {Array} - A list of applications.
+ */
+
+/**
+ * Retrieves the resume for a specific application.
+ * @route GET /api/v1/applications/:id/resume
+ * @param {number} id - The ID of the application.
+ * @returns {Buffer} - The resume PDF.
+ */
+
+/**
+ * Verifies a Cognito token.
+ * @route POST /api/v1/verify_token
+ * @param {string} token - The Cognito token.
+ * @returns {Object} - The user attributes if the token is valid.
+ */
+
+/**
+ * Creates a new user in Cognito.
+ * @route POST /api/v1/create_user
+ * @param {Object} userData - The user data.
+ * @returns {Object} - The created user information.
+ */
+
+/**
+ * Signs in a user using Cognito.
+ * @route POST /api/v1/signin
+ * @param {string} email - The user's email.
+ * @param {string} password - The user's password.
+ * @returns {Object} - The user attributes and access token.
+ */
+
+/**
+ * Confirms a user's sign-up in Cognito.
+ * @route POST /api/v1/confirm_user
+ * @param {string} username - The username.
+ * @param {string} confirmationCode - The confirmation code.
+ * @returns {Object} - The confirmation result.
+ */
+
+/**
+ * Applies for an opportunity.
+ * @route POST /api/v1/apply
+ * @param {Object} application - The application data.
+ * @param {Object} resume - The uploaded resume file.
+ * @returns {Object} - A success message.
+ */
+
+/**
+ * Creates a new opportunity.
+ * @route POST /api/v1/opportunities
+ * @param {Object} opportunity - The opportunity data.
+ * @returns {Object} - A success message.
+ */
+
+/**
+ * Updates an application.
+ * @route PUT /api/v1/applications/:id
+ * @param {number} id - The ID of the application.
+ * @param {Object} updatedApplication - The updated application data.
+ * @returns {Object} - A success message.
+ */
+
+/**
+ * Starts the Express server on port 8080.
+ */
+
 const express = require("express");
 const morgan = require("morgan");
 const multer = require("multer");
