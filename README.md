@@ -1,70 +1,107 @@
-# Getting Started with Create React App
+# PlatePals
+PlatePals is a web platform designed to connect individuals with food-related volunteer opportunities. Think of it as "LinkedIn for Food Volunteers," where organizations and volunteers can engage and collaborate to help combat food insecurity and support food-related causes.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# 🚀 Live URL
+PlatePals Web App
 
-## Available Scripts
+# 🛠️ Technologies Used
+This project leverages a wide range of AWS services and modern web technologies to provide a responsive and scalable solution:
 
-In the project directory, you can run:
+**Frontend**:
+React.js (with responsive design)
+TailwindCSS
+Toastify
+Amplify (for frontend hosting and CI/CD)
+**Backend**:
+Node.js & Express.js (for building the RESTful API)
+AWS App Runner (to run the backend services in the cloud)
+AWS Infrastructure:
+Amazon ECR (Elastic Container Registry to store Docker images)
+AWS Amplify (for hosting and deploying the frontend)
+Amazon S3 (for storing static assets)
+Amazon DynamoDB (as the NoSQL database to manage volunteer opportunities and user data)
+Amazon Cognito (for authentication and user management)
+# 📚 Features
+**Volunteer Matching**: Volunteers can browse and search food-related volunteer opportunities based on location and interest.
+Organization Management: Organizations can post and manage volunteer opportunities.
+**Responsive Design**: Fully responsive frontend to ensure seamless experience across devices.
+Authentication: Secure login and sign-up via AWS Cognito.
+**Data Storage**: Opportunities and user data stored in AWS DynamoDB for scalability and performance.
+**Backend API**: Node.js/Express API for managing users, opportunities, and more.
+# 💻 Local Development
+**Prerequisites**
+Node.js (v14+)
+Docker (for building and running containerized services)
+AWS CLI (for managing AWS services)
+# Installation
+Clone the repository:
 
-### `npm start`
+bash
+Copy code
+git clone https://github.com/yourusername/platepals.git
+cd platepals
+Install the dependencies:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+For the backend:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+bash
+Copy code
+cd backend
+npm install
+For the frontend:
 
-### `npm test`
+bash
+Copy code
+cd frontend
+npm install
+Set up environment variables:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Create a .env file in both the frontend and backend directories and populate it with your environment-specific configurations (e.g., AWS keys, database credentials, Cognito settings).
 
-### `npm run build`
+Run the backend locally:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+bash
+Copy code
+cd backend
+npm run dev
+Run the frontend locally:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+bash
+Copy code
+cd frontend
+npm start
+# 🚢 Deployment
+**Backend**:
+The backend is deployed via AWS App Runner, which automatically pulls the containerized image from Amazon ECR.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Build and push the Docker image:
 
-### `npm run eject`
+bash
+Copy code
+docker build -t platepals-backend .
+docker tag platepals-backend:latest 650251711292.dkr.ecr.us-east-1.amazonaws.com/platepals-backend:latest
+docker push 650251711292.dkr.ecr.us-east-1.amazonaws.com/platepals-backend:latest
+Deploy via App Runner: The App Runner service is configured to automatically pull from ECR and deploy updates to the backend.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+**Frontend**:
+The frontend is hosted via AWS Amplify, which automatically builds and deploys on every push to the main branch.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# 📂 Project Structure
+graphql
+Copy code
+root
+│
+├── backend                 # Express.js API code
+│   ├── src                 # API routes and controllers
+│   ├── config              # Configurations (AWS services, DB connections)
+│   └── .env.example        # Example environment variables for backend
+│
+├── frontend                # React.js frontend code
+│   ├── src                 # Components and views
+│   ├── public              # Public static files
+│   └── .env.example        # Example environment variables for frontend
+│
+├── docker-compose.yml      # For local dev environment using Docker
+└── README.md               # Project documentation
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Feel free to customize this further based on specific details or functionality you want to highlight! If you need any adjustments, just let me know!
